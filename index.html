@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>前後端開發須知</title>
+    <link rel="stylesheet" href="main.css">
+
+</head>
+
+<body>
+
+    <h2>前後端開發流程:</h2>
+    <p>前言: IDE請使用visual studio code，server的os都是用centos 7.5來代表，底下每一個參考，都可以多找幾篇文章來看，這邊只提供一篇當參考</p>
+    <p>      公司的repo url: repo.devpack.cc</p>
+    <h3>1. 建立git repository</h3>
+    <p>參考:<a href="http://gogojimmy.net/2012/01/17/how-to-use-git-1-git-basic/" target="_blank">git教學</a>，請先看完這一篇再接著做底下動作</p>
+    <p>a. <a href="https://gitlab.devpack.cc/dashboard/projects" target="_blank">公司git</a></p>
+    <p>b. 帳號密碼: 可以自訂，也可以使用OA筆電的帳密</p>
+    <p>c. 進入網站後，可以點選New project來建立repository，建完後，進入project取得clone url(比如:https://gitlab.devpack.cc/Anta_Hsiao/document.git)</p>
+    <p>d. 在local端安裝(<a href="https://gitforwindows.org/" target="_blank">git</a>)，網路上有很多有GUI的git，可自行搜尋並使用，底下接用git bash寫範例</p>
+    <p>e. 打開git bash，如果您是使用windows，可以先看一下這一篇<a href="https://blog.techbridge.cc/2017/12/23/linux-commnd-line-tutorial/" target="_blank">linux 基本指令</a></p>
+    <p>f. 接著請輸入git clone git@gitlab.devpack.cc:Anta_Hsiao/document.git，會要求你輸入帳號密碼</p>
+
+    <h3>2. 使用ESLint來管理coding style</h3>
+    <p>參考:因前後端需求不一，所以建議前後端各自一份，<a href="https://larrylu.blog/improve-code-quality-using-eslint-742cf1f384f1" target="_blank">請先看完這一篇再繼續</a></p>
+    <h4>2.1 後端 eslint</h4>
+    <p>a. eslint --init</p>
+    <p>b. 根據前後端需求選擇所需要的style，並選擇Airbnb作為default的style</p>
+    <p>c. <a href="./BackEnd/.eslintrc.js" target="_blank">javascript ESLint後端範例</a></p>
+
+    <h4>2.2 前端eslint</h4>
+    <p>    待Kelvin哥補</p>
+    
+    <h3>3. 開始寫code，寫寫寫寫，寫了很久之後，想要release了.....</h3>
+
+    <h3>4. 請使用docker作為release的工具</h3>
+    <p>參考:<a href="https://github.com/twtrubiks/docker-tutorial" target="_blank">請先看完這一篇再繼續</a></p>
+    <p>a. build docker image通常有兩個步驟，第一個是build，第二個是push image，只是因為source code都會需要安裝一些module的東西，確保環境正確，所以會多一個步驟裝東西</p>
+    <p>b. 先將執行環境該安裝的東西裝一裝(比如:npm install)</p>
+    <p>c. 確認程式可以執行後，參考<a href="./Backend/docker/Dockerfile" target="_blank">Dockerfile sample</a></p>
+    <p>d. 下sudo docker build --no-cache -t repo.devpack.cc/anta_hsiao/document:latest -f Dockerfile .</p>
+    <p>e. d完成後，可以將image push回到repo.devpack.cc(需要先下docker login，用OA的帳密登入)，下sudo docker push repo.devpack.cc/anta_hsiao/document:latest</p>
+    <p>備註: 如果每次build都是同一個人，那以上步驟沒有問題，但如果是持續性結合git的depoly(俗稱CD)，那就得用tag來控管這些image的版本，那怕有一天需要緊急降版，這個後面在一併說明。</p>
+
+    <h3>5. unit test(待補)</h3>
+
+    <h3>6. 結合git、docker、unit test來做CI/CD</h3>
+    
+    <h3>6.1. gitlab-runner</h3>
+    <p>參考:<a href="https://docs.gitlab.com/runner/" target="_blank">gitlab-runner doc</a></p>
+    <p>a. 如果你有VM沒安裝過gitlab-runner，則參照<a href="https://docs.gitlab.com/runner/install/linux-repository.html" target="_blank">gitlab-runner install</a>，如果沒有VM，則就看天安排要去那一台跑了，請跳c</p>
+    <p>b. 如果你做完a，參照<a href="https://docs.gitlab.com/runner/register/index.html" target="_blank">gitlab-runner register</a>註冊gitlab-runner</p>
+    <p>c. 到這步驟至少有一台gitlab-runner可以使用，請善用tag來trigger你要的gitlab-runner跑CI/CD</p>
+    
+    <h3>6.2. .gitlab-ci.yml</h3>
+    <p>參考:此網站<a href="https://docs.gitlab.com/ee/ci/" target="_blank">gitlab CI/CD</a>內容有點多，可以先專注在stage上，進階可以再找時間研讀</p>
+    <p>a. <a href="./.gitlab-ci.yml" target="_blank">.gitlab-ci.yml</a></p>，這邊是一個很簡單的例子，分成兩個stage，第一個是clean，command是sudo rm -rf ./BackEnd/public/apidoc ./BackEnd/node_modules，
+    <p>   也就是把一些javascript每一次安裝環境會出現的東西都刪掉在重裝</p>
+    <p>b. 第二個stage是build，裡面分成三個步驟:
+    <h4>b.1. 第一個是安裝執行環境:sudo docker run --rm -v `pwd`/BackEnd:/myapp -t oraclelinux:7-slim sh -x -c 'yum -y install oracle-release-el7  oracle-nodejs-release-el7  && yum-config-manager --disable ol7_developer_EPEL && yum -y install nodejs && rm -rf /var/cache/yum && cd /myapp && npm install && npm install nexe -g && cp -rf ./lib/libstdc++.so.6* /usr/lib64/  && nexe server.js &&  ls'</h4>
+    <h4>b.2. docker build, 指令: make docker-build -C ./BackEnd/docker，指令說明如下:</h4>
+    <p>跑BackEnd資料夾裡的docker資料夾裡的Makefile檔案中的docker-builed</p>
+    <p>ex. sudo docker build --no-cache -t repo.devpack.cc/anta_hsiao/document:1.0-a9ijdk -f Dockerfile ../</p>
+    <p>說明: 1.0-a9ijdk means 1.0版本號，a9ijdk是commit亂序的前六碼</p>
+    <h4>b.3. push docker image:</h4>
+    <p>sudo docker tag repo.devpack.cc/anta_hsiao/document:1.0-a9ijdk repo.devpack.cc/anta_hsiao/document:latest</p>
+    <p>上面這一行是上tag</p>
+    <p>sudo docker push repo.devpack.cc/anta_hsiao/document:1.0-a9ijdk</p>
+    <p>sudo docker push repo.devpack.cc/anta_hsiao/document:latest</p>
+    <p>上面這兩行是因為每一次release都是最新的，但有時候需要回朔的時候，我們要可以找的要回朔的版本，所以要push兩個版本上去</p>
+    <h4>b.4. 到別的機器run docker image:</h4> 
+    <p>docker pull repo.devpack.cc/anta_hsiao/document:latest</p>
+    <p>docker run repo.devpack.cc/anta_hsiao/document:latest</p>   
+    <p>上面舉的是最簡單的例子，會印出一句hello world</p>
+
+</body>
+
+</html>

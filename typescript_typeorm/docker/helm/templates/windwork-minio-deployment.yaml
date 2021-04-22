@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    generated: by hyman
+    kompose.cmd: kompose convert -c
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: windwork-minio
+  name: windwork-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: windwork-minio
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        generated: by hyman
+        kompose.cmd: kompose convert -c
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: windwork-minio
+    spec:
+      containers:
+      - args:
+        - server
+        - /data
+        env:
+        - name: MINIO_ACCESS_KEY
+          value: "12345678"
+        - name: MINIO_SECRET_KEY
+          value: "12345678"
+        image: minio/minio
+        imagePullPolicy: ""
+        name: windwork-minio
+        ports:
+        - containerPort: 9000
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

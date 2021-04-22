@@ -1,0 +1,9 @@
+.idea/
+logs/
+**/node_modules/
+**/out/
+**/tmp/
+**/temp/
+**/logs/
+ormlogs.log
+.DS_Store

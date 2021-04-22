@@ -1,0 +1,13 @@
+{
+    "name": "API DOC name",
+    "version": "1.0.0",
+    "description": "API DOC description",
+    "title": "API DOC title",
+    "url": "http://localhost",
+    "sampleUrl": "http://localhost",
+    "forceLanguage": "zh-cn",
+    "template": {
+        "withCompare": true,
+        "withGenerator": true
+    }
+}

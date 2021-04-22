@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    generated: by hyman
+    kompose.cmd: kompose convert -c
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: windowrk-db
+  name: windowrk-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: windowrk-db
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        generated: by hyman
+        kompose.cmd: kompose convert -c
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: windowrk-db
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_DB
+          value: test
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        image: postgres
+        imagePullPolicy: ""
+        name: windowrk-db
+        ports:
+        - containerPort: 5432
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

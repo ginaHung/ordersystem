@@ -1,0 +1,8 @@
+name: windwork
+description: A generated Helm Chart for windwork from Skippbox Kompose
+version: 0.0.1
+apiVersion: v1
+keywords:
+  - windwork
+sources:
+home:

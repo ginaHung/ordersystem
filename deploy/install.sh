@@ -1,0 +1,1 @@
+docker run docker run repo.devpack.cc/anta_hsiao/document:latest

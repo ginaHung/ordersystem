@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "lib": [ 
+      "es5", // 採用ECM標準
+      "es6"
+    ],
+    "target": "ESNext",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./out", //編譯後產生的路徑
+    "emitDecoratorMetadata": true, //針對 typeorm 要開的設定，如果是TypeScript version 3.3 或以上
+    "experimentalDecorators": true,  //針對 typeorm 要開的設定，如果是TypeScript version 3.3 或以上
+    // "strictPropertyInitialization": false, //如果之後在entity的property設定有問題的話就加以下這行
+    "sourceMap": true,
+    "baseUrl": "./" //取得ts檔的路徑
+  },
+  "include": [
+    "./**/*.ts", "ormconfig.js"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

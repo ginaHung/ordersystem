@@ -1,0 +1,376 @@
+swagger: '2.0'
+info:
+  title: WiMiniSpotify Project
+  version: '1.2'
+  description: |-
+    v1.1
+    add 2 path for item relationship
+
+    ------
+
+    v1.2
+    post response data fix
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+security:
+  - Bearer: []
+paths:
+  /album:
+    get:
+      summary: get albums by pagination and keyword
+      responses:
+        '200':
+          $ref: '#/responses/albums_response'
+        '400':
+          description: Bad Request
+      parameters:
+        - $ref: '#/parameters/current'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/keyword'
+    post:
+      summary: add album
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/common_single_data'
+        '400':
+          description: Bad Request
+      parameters:
+        - $ref: '#/parameters/commonPostBody'
+    put:
+      summary: change album name
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      parameters:
+        - $ref: '#/parameters/commonPutBody'
+    delete:
+      summary: delete album
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      parameters:
+        - $ref: '#/parameters/commonDeleteBody'
+  /singer:
+    get:
+      summary: get singers by pagination and keyword
+      responses:
+        '200':
+          $ref: '#/responses/singers_response'
+        '400':
+          description: Bad Request
+      parameters:
+        - $ref: '#/parameters/current'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/keyword'
+    post:
+      summary: add singer
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/common_single_data'
+        '400':
+          description: Bad Request
+      parameters:
+        - $ref: '#/parameters/commonPostBody'
+    put:
+      summary: change singer name
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      parameters:
+        - $ref: '#/parameters/commonPutBody'
+    delete:
+      summary: delete singer
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      parameters:
+        - $ref: '#/parameters/commonDeleteBody'
+  /song:
+    get:
+      summary: get song by pagination and keyword
+      responses:
+        '200':
+          $ref: '#/responses/songs_response'
+        '400':
+          description: Bad Request
+      parameters:
+        - $ref: '#/parameters/current'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/keyword'
+    post:
+      summary: add song
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/common_single_data'
+        '400':
+          description: Bad Request
+      parameters:
+        - $ref: '#/parameters/commonPostBody'
+    put:
+      summary: change song name
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      parameters:
+        - $ref: '#/parameters/commonPutBody'
+    delete:
+      summary: delete song
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      parameters:
+        - $ref: '#/parameters/commonDeleteBody'
+  /addSingersToSong:
+    post:
+      summary: add singers to a song
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+      parameters:
+        - name: addSingersToSong
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              song_id:
+                $ref: '#/definitions/song_id'
+              singer_ids:
+                type: array
+                items:
+                  type: string
+                  $ref: '#/definitions/singer_id'
+  /addSongsToAlbum:
+    post:
+      summary: addSongsToAlbum
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+      parameters:
+        - name: addSongsToAlbum
+          in: body
+          schema:
+            type: object
+            properties:
+              album_id:
+                $ref: '#/definitions/album_id'
+              song_ids:
+                type: array
+                items:
+                  type: string
+                  $ref: '#/definitions/song_id'
+definitions:
+  singer_id:
+    type: string
+    format: uuid
+    description: ''
+    example: efb8291e-0383-44c7-a36b-3e54cef41149
+  singer_name:
+    type: string
+    example: Aimer
+  song_id:
+    type: string
+    example: d42f6ee8-76ca-4063-97a5-cffd0ae640f9
+    format: uuid
+  song_name:
+    type: string
+    example: Kataomi
+  album_id:
+    type: string
+    format: uuid
+    example: 89b25ba5-a011-49a1-9578-a5b02bb4f56a
+  album_name:
+    type: string
+    example: Daydream
+  pagination:
+    type: object
+    properties:
+      current:
+        type: number
+        example: '1'
+      pageSize:
+        type: number
+        example: '10'
+      total:
+        type: string
+        example: '200'
+  album_data:
+    type: object
+    properties:
+      id:
+        $ref: '#/definitions/album_id'
+      name:
+        $ref: '#/definitions/album_name'
+      songs:
+        type: array
+        items:
+          type: string
+          $ref: '#/definitions/song_data'
+  singer_data:
+    type: object
+    properties:
+      id:
+        $ref: '#/definitions/singer_id'
+      name:
+        $ref: '#/definitions/singer_name'
+  song_data:
+    type: object
+    properties:
+      id:
+        $ref: '#/definitions/song_id'
+      name:
+        $ref: '#/definitions/song_name'
+      singers:
+        type: array
+        items:
+          type: string
+          $ref: '#/definitions/singer_data'
+  common_single_data:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 89b25ba5-a011-49a1-9578-a5b02bb4f56a
+      name:
+        type: string
+        example: thisisaname
+parameters:
+  commonPostBody:
+    name: commonPostBody
+    in: body
+    required: true
+    description: commonAddBody
+    schema:
+      type: object
+      properties:
+        name:
+          $ref: '#/definitions/singer_name'
+  commonPutBody:
+    name: commonPutBody
+    in: body
+    description: commonPutBody
+    schema:
+      type: object
+      properties:
+        id:
+          $ref: '#/definitions/singer_id'
+        name:
+          $ref: '#/definitions/singer_name'
+  commonDeleteBody:
+    name: commonDeleteBody
+    in: body
+    description: commonDeleteBody
+    schema:
+      type: object
+      properties:
+        id:
+          $ref: '#/definitions/singer_id'
+  current:
+    name: current
+    in: query
+    required: true
+    type: number
+    description: Current page number
+  pageSize:
+    name: pageSize
+    in: query
+    required: true
+    type: number
+    description: Number of data items per page
+  keyword:
+    name: keyword
+    in: query
+    type: string
+    description: keyword of search item name
+  id:
+    name: id
+    in: path
+    required: true
+    type: string
+    description: uuid of item
+responses:
+  albums_response:
+    description: albums_response
+    schema:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/definitions/pagination'
+        result:
+          type: array
+          items:
+            type: string
+            $ref: '#/definitions/album_data'
+  single_album_response:
+    description: single_album_response
+    schema:
+      $ref: '#/definitions/album_data'
+  songs_response:
+    description: songs_response
+    schema:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/definitions/pagination'
+        result:
+          type: array
+          items:
+            type: string
+            $ref: '#/definitions/song_data'
+  single_song_response:
+    description: single_song_response
+    schema:
+      $ref: '#/definitions/song_data'
+  singers_response:
+    description: singers_response
+    schema:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/definitions/pagination'
+        result:
+          type: array
+          items:
+            type: string
+            $ref: '#/definitions/singer_data'
+  single_singer_response:
+    description: single_singer_response
+    schema:
+      $ref: '#/definitions/singer_data'

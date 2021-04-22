@@ -1,0 +1,35 @@
+version: '3'
+services:
+  windwork-minio:
+    labels:
+      generated: by hyman
+    image: minio/minio
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+      MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+    ports:
+      - 9000:9000
+  windowrk-db:
+    labels:
+      generated: by hyman
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+  windwork-web:
+    image: $IMAGEREPO
+    labels:
+      generated: by hyman
+      kompose.image-pull-secret: regcred
+      kompose.service.expose: windwork.k8s.devpack.cc
+      kompose.service.expose.tls-secret: windwork-k8s-devpack-cc-tls
+      kompose.service.type: nodeport
+    ports:
+      - 3000:3000
+    depends_on:
+      - windowrk-db
+      - windwork-minio

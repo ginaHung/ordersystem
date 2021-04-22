@@ -1,0 +1,58 @@
+variables:
+  WISTRON_DOCKER_REGISTRY: repo.devpack.cc
+  DOCKER_HOST_MY: "192.168.101.71"
+
+stages:
+  - node-build
+  - docker-build
+  - deploy
+
+job1:
+  stage: node-build
+  image: node:lts-slim
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - ./node_modules
+      - ./out
+  script:
+    - npm install
+    - npm run lint
+    - npm run compile
+    - npm run copy-ssl
+  tags:
+    - aws
+    - m4-large
+
+job2:
+  stage: docker-build
+  image: docker:latest
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - ./node_modules
+      - ./out
+  dependencies:
+    - job1
+  services:
+    - docker:dind
+  script:
+    - docker version
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker tag $CI_REGISTRY_IMAGE:latest $CI_REGISTRY_IMAGE:${CI_COMMIT_SHA:0:8}
+    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $WISTRON_DOCKER_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:${CI_COMMIT_SHA:0:8}
+  tags:
+    - aws
+    - m4-large
+
+job3:
+  stage: deploy
+  image: docker:latest
+  script:
+    - docker -H $DOCKER_HOST_MY rm -f windwork || true
+    - docker -H $DOCKER_HOST_MY login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $WISTRON_DOCKER_REGISTRY
+    - docker -H $DOCKER_HOST_MY pull $CI_REGISTRY_IMAGE:${CI_COMMIT_SHA:0:8}
+    - docker -H $DOCKER_HOST_MY run -d --name windwork -p 3000:3000 --env-file $DEV_ENV_FILE $CI_REGISTRY_IMAGE:${CI_COMMIT_SHA:0:8}
+  tags:
+    - hyman

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    generated: by hyman
+    kompose.cmd: kompose convert -c
+    kompose.image-pull-secret: regcred
+    kompose.service.expose: windwork.k8s.devpack.cc
+    kompose.service.expose.tls-secret: windwork-k8s-devpack-cc-tls
+    kompose.service.type: nodeport
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: windwork-web
+  name: windwork-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: windwork-web
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        generated: by hyman
+        kompose.cmd: kompose convert -c
+        kompose.image-pull-secret: regcred
+        kompose.service.expose: windwork.k8s.devpack.cc
+        kompose.service.expose.tls-secret: windwork-k8s-devpack-cc-tls
+        kompose.service.type: nodeport
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: windwork-web
+    spec:
+      containers:
+      - image: repo.devpack.cc/andy_tsai/windwork:bd87fc66
+        imagePullPolicy: ""
+        name: windwork-web
+        ports:
+        - containerPort: 3000
+        resources: {}
+      imagePullSecrets:
+      - name: regcred
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
