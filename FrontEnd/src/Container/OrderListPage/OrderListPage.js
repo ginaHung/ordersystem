@@ -21,7 +21,6 @@ class LoginPage extends React.Component {
     password: '',
 
     // router
-    OrderListPageRouter: '/OrderListPage/OrderListPage',
   }
 
   constructor(props) {
@@ -39,11 +38,11 @@ class LoginPage extends React.Component {
     // console.log('DidMount LoginPage');
   }
 
-  componentWillUpdate = () => {
+  componentWillUpdate = (nextProps, nextState) => {
     // console.log('WillUpdat LoginPage');
   }
 
-  componentDidUpdate = () => {
+  componentDidUpdate = (lastProps, lastState) => {
     // console.log('DidUpdate LoginPage');
   }
 
@@ -69,7 +68,7 @@ class LoginPage extends React.Component {
   }
 
   handleLogin = async () => {
-    const { username, OrderListPageRouter } = this.state;
+    const { username } = this.state;
     let { password } = this.state;
     const { history } = this.props;
     console.log(1);
@@ -101,10 +100,10 @@ class LoginPage extends React.Component {
       if (true) {
         console.log(6);
         sessionStorage.setItem('emplid', username);
-        history.push(OrderListPageRouter);
+        history.push('/inspection/inspectionlist');
       } else {
         console.log(7);
-        // message.error(member.data.errorCode);
+        message.error(member.data.errorCode);
       }
     }
   }
@@ -115,56 +114,8 @@ class LoginPage extends React.Component {
       password,
     } = this.state;
     return (
-      <div className="login_form">
-        <div>
-          <table className="table_container">
-            <tr>
-              <td style={{ width: '40%' }}><img alt="cover" src={cover} style={{ float: 'right' }} /></td>
-              <td style={{ width: '1%' }} />
-              <td>
-                <from>
-                  <table>
-                    <tr><td colSpan="3" style={{ fontSize: '28px' }}><h1>下午茶點餐系統</h1></td></tr>
-                    <tr style={{ height: 50 }}>
-                      <td style={{ width: 60, textAlign: 'right', fontSize: '20px' }}>工號</td>
-                      <td style={{ width: 2 }} />
-                      <td>
-                        <Input
-                          defaultValue={username}
-                          placeholder="输入工号"
-                          onChange={this.changeUserName}
-                        />
-                      </td>
-                    </tr>
-                    <tr style={{ height: 50 }}>
-                      <td style={{ textAlign: 'right', fontSize: '20px' }}>密碼</td>
-                      <td style={{ width: '1%' }} />
-                      <td>
-                        <Input.Password
-                          style={{ height: 30 }}
-                          defaultValue={password}
-                          placeholder="输入密碼"
-                          onChange={this.changePassword}
-                        />
-                      </td>
-                    </tr>
-                    <tr style={{ height: 50 }}>
-                      <td colSpan="3">
-                        <Button
-                          style={{ height: 30, width: '60%', fontSize: '18px' }}
-                          htmlType="submit"
-                          onClick={() => this.handleLogin()}
-                        >
-                          登入
-                        </Button>
-                      </td>
-                    </tr>
-                  </table>
-                </from>
-              </td>
-            </tr>
-          </table>
-        </div>
+      <div className="login_form" >
+       
       </div>
     );
   }
