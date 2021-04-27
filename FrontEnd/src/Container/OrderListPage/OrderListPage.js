@@ -1,26 +1,141 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/jsx-one-expression-per-line */
 import React from 'react';
-import crypto from 'crypto';
 import PropTypes from 'prop-types';
+// import { Route } from 'react-router-dom';
 import {
+  Tooltip,
+  Table,
   Button,
+  Divider,
   Input,
   message,
 } from 'antd';
 
-import { verify } from '../../service/API';
-import './LoginPage.less';
-import cover from '../../../img/cover.png';
-// import NowTime from '../../Component/DateTime';
-// import { brotliDecompress } from 'zlib';
+import './OrderListPage.less';
+// import { verify } from '../../service/API';
+import {
+  SYSTEM_TITLE,
+  LoginRouter, HeaderPageRouter,
+  dataSource,
+} from '../../utils/define';
+import imgAddOrder from '../../../img/add-button.png';
 
-class LoginPage extends React.Component {
+const { Search } = Input;
+class OrderListPage extends React.Component {
+  refStep1 = React.createRef();
 
   initState = {
-    username: '',
-    password: '',
+    username: sessionStorage.getItem('emplid'),
 
-    // router
+    // 我建立的訂單 table header
+    myOrderListColumn: [
+      {
+        title: '單號',
+        dataIndex: 'id',
+        align: 'center',
+        width: 130,
+      },
+      {
+        title: '名稱',
+        dataIndex: 'name',
+        align: 'center',
+        width: 200,
+      },
+      {
+        title: '建立者',
+        dataIndex: 'user',
+        align: 'center',
+        width: 100,
+      },
+      {
+        title: '結案時間',
+        dataIndex: 'endtime',
+        align: 'center',
+        width: 200,
+      },
+      {
+        title: '描述',
+        dataIndex: 'dscribe',
+        align: 'left',
+        // width: 200,
+        render: (text, record) => (
+          <div>
+            {(record.dscribe.length > 30) ? `${record.dscribe.slice(0, 30)}...` : record.dscribe}
+          </div>
+        ),
+      },
+      {
+        title: '操作',
+        width: 170,
+        fixed: 'right',
+        align: 'center',
+        render: (text, record) => (
+          <div>
+            <Button size="middle" onClick={() => this.editOrderListBtn()}>
+              編輯
+            </Button>
+            <Button size="middle" style={{ marginLeft: 5 }} onClick={() => this.deleteOrderListBtn()}>
+              刪除
+            </Button>
+          </div>
+        ),
+      },
+    ],
+
+    // 所有訂單 table header
+    allOrderListColumn: [
+      {
+        title: '單號',
+        dataIndex: 'id',
+        align: 'center',
+        width: 130,
+      },
+      {
+        title: '名稱',
+        dataIndex: 'name',
+        align: 'center',
+        width: 200,
+      },
+      {
+        title: '建立者',
+        dataIndex: 'user',
+        align: 'center',
+        width: 100,
+      },
+      {
+        title: '結案時間',
+        dataIndex: 'endtime',
+        align: 'center',
+        width: 200,
+      },
+      {
+        title: '描述',
+        dataIndex: 'dscribe',
+        align: 'left',
+        // width: 200,
+        render: (text, record) => (
+          <div>
+            {(record.dscribe.length > 30) ? `${record.dscribe.slice(0, 30)}...` : record.dscribe}
+          </div>
+        ),
+      },
+      {
+        title: '操作',
+        width: 10,
+        fixed: 'right',
+        align: 'center',
+        render: (text, record) => (
+          <div>
+            <Button size="middle" onClick={() => this.joinOrderBtn()}>
+              +1
+            </Button>
+          </div>
+        ),
+      },
+    ],
   }
 
   constructor(props) {
@@ -30,28 +145,20 @@ class LoginPage extends React.Component {
     };
   }
 
-  componentWillMount = () => {
-    // console.log('WillMount LoginPage');
-  }
-
-  componentDidMount = () => {
-    // console.log('DidMount LoginPage');
-  }
-
-  componentWillUpdate = (nextProps, nextState) => {
-    // console.log('WillUpdat LoginPage');
-  }
-
-  componentDidUpdate = (lastProps, lastState) => {
-    // console.log('DidUpdate LoginPage');
-  }
-
   IsNullOrEmpty = async (txt) => {
-    if (txt === undefined || txt === '') {
+    if (txt === undefined || txt === null || txt === '') {
       return true;
     }
     return false;
   }
+
+  componentWillMount = () => { }
+
+  componentDidMount = async () => { }
+
+  componentWillUpdate = () => { }
+
+  componentDidUpdate = (lastProps, lastState) => { }
 
   changeUserName = (e) => {
     // console.log('changeDomain', e.target.value);
@@ -60,73 +167,90 @@ class LoginPage extends React.Component {
     });
   }
 
-  changePassword = (e) => {
-    // console.log('changeDomain', e.target.value);
-    this.setState({
-      password: e.target.value,
-    });
-  }
-
-  handleLogin = async () => {
-    const { username } = this.state;
-    let { password } = this.state;
+  handlePage = (path) => {
     const { history } = this.props;
-    console.log(1);
-
-    if (await this.IsNullOrEmpty(username) || await this.IsNullOrEmpty(password)) {
-      console.log(2);
-      message.error('請輸入工號與密碼');
-    } else {
-      console.log(3);
-      const secret = '9Xb%,fZ4)G!k9XS;';
-      const iv = new Buffer.alloc(16);
-      const HASH_KEY = crypto
-        .createHash('sha256')
-        .update(secret)
-        .digest();
-      const cipher = crypto.createCipheriv('aes-256-cbc', HASH_KEY, iv);
-      let passwordSecret = cipher.update(password, 'binary', 'base64');
-      passwordSecret += cipher.final('base64');
-      password = passwordSecret;
-      const data = {
-        domain: 'WHQ',
-        user: username.toUpperCase(),
-        pwd: password,
-      };
-      // const member = await verify(data);
-      console.log(5);
-
-      // if (member.data.success) {
-      if (true) {
-        console.log(6);
-        sessionStorage.setItem('emplid', username);
-        history.push('/inspection/inspectionlist');
-      } else {
-        console.log(7);
-        message.error(member.data.errorCode);
-      }
-    }
+    history.push(path);
   }
+
+  addOrderListBtn = () => { }
+
+  editOrderListBtn = () => { }
+
+  deleteOrderListBtn = () => { }
+
+  onSearchBtn = (value) => { console.log(value); }
+
+  joinOrderBtn = () => { }
 
   render() {
-    const {
-      username,
-      password,
-    } = this.state;
+    const { myOrderListColumn, allOrderListColumn } = this.state;
     return (
-      <div className="login_form" >
-       
+      <div>
+        <div className="panel-style" style={{ height: 290 }}>
+          <div style={{ marginTop: 5, width: '100%' }}>
+            <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+              我建立的訂單
+            </span>
+            <Tooltip placement="topLeft" title="建立訂單">
+              <a onClick={() => this.addOrderListBtn()}>
+                <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
+              </a>
+            </Tooltip>
+          </div>
+          <div style={{ marginTop: 5, width: '100%', height: 180 }}>
+            <Table
+              columns={myOrderListColumn}
+              dataSource={dataSource}
+              bordered
+              size="small"
+              pagination={{
+                defaultPageSize: 3,
+              }}
+              scroll={{ x: 'max-content' }}
+            />
+          </div>
+        </div>
+        <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
+
+        <div className="panel-style">
+          <div style={{ marginTop: 5, width: '100%' }}>
+            <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+              所有訂單
+            </span>
+            <Search
+              style={{ width: 200, marginLeft: 10 }}
+              allowClear="true"
+              placeholder="input search text"
+              onSearch={this.onSearchBtn}
+            />
+          </div>
+          <div style={{ marginTop: 5, width: '100%', height: 180 }}>
+            <Table
+              columns={allOrderListColumn}
+              dataSource={dataSource}
+              bordered
+              size="small"
+              pagination={{
+                defaultPageSize: 10,
+              }}
+              scroll={{ x: 'max-content' }}
+            />
+          </div>
+        </div>
+
       </div>
     );
   }
 }
 
-LoginPage.propTypes = {
+OrderListPage.propTypes = {
+  jumpRoute: PropTypes.func,
   history: PropTypes.func,
 };
 
-LoginPage.defaultProps = {
+OrderListPage.defaultProps = {
+  jumpRoute: null,
   history: null,
 };
 
-export default LoginPage;
+export default OrderListPage;

@@ -2,30 +2,24 @@
 import React from 'react';
 import crypto from 'crypto';
 import PropTypes from 'prop-types';
-import {
-  Button,
-  Input,
-  message,
-} from 'antd';
+import { Button, Input, message } from 'antd';
 
-import { verify } from '../../service/API';
 import './LoginPage.less';
 import cover from '../../../img/cover.png';
+import { verify } from '../../service/API';
+import { SYSTEM_TITLE, HeaderPageRouter } from '../../utils/define';
 // import NowTime from '../../Component/DateTime';
-// import { brotliDecompress } from 'zlib';
 
 class LoginPage extends React.Component {
 
   initState = {
     username: '',
     password: '',
-
-    // router
-    OrderListPageRouter: '/OrderListPage/OrderListPage',
   }
 
   constructor(props) {
     super(props);
+    sessionStorage.clear();
     this.state = {
       ...this.initState,
     };
@@ -69,16 +63,13 @@ class LoginPage extends React.Component {
   }
 
   handleLogin = async () => {
-    const { username, OrderListPageRouter } = this.state;
+    const { username } = this.state;
     let { password } = this.state;
     const { history } = this.props;
-    console.log(1);
 
     if (await this.IsNullOrEmpty(username) || await this.IsNullOrEmpty(password)) {
-      console.log(2);
       message.error('請輸入工號與密碼');
     } else {
-      console.log(3);
       const secret = '9Xb%,fZ4)G!k9XS;';
       const iv = new Buffer.alloc(16);
       const HASH_KEY = crypto
@@ -94,16 +85,14 @@ class LoginPage extends React.Component {
         user: username.toUpperCase(),
         pwd: password,
       };
-      // const member = await verify(data);
-      console.log(5);
 
+      // const member = await verify(data);
       // if (member.data.success) {
       if (true) {
-        console.log(6);
+        sessionStorage.setItem('login', true);
         sessionStorage.setItem('emplid', username);
-        history.push(OrderListPageRouter);
+        history.push(HeaderPageRouter);
       } else {
-        console.log(7);
         // message.error(member.data.errorCode);
       }
     }
@@ -115,55 +104,60 @@ class LoginPage extends React.Component {
       password,
     } = this.state;
     return (
-      <div className="login_form">
-        <div>
-          <table className="table_container">
-            <tr>
-              <td style={{ width: '40%' }}><img alt="cover" src={cover} style={{ float: 'right' }} /></td>
-              <td style={{ width: '1%' }} />
-              <td>
-                <from>
-                  <table>
-                    <tr><td colSpan="3" style={{ fontSize: '28px' }}><h1>下午茶點餐系統</h1></td></tr>
-                    <tr style={{ height: 50 }}>
-                      <td style={{ width: 60, textAlign: 'right', fontSize: '20px' }}>工號</td>
-                      <td style={{ width: 2 }} />
-                      <td>
-                        <Input
-                          defaultValue={username}
-                          placeholder="输入工号"
-                          onChange={this.changeUserName}
-                        />
-                      </td>
-                    </tr>
-                    <tr style={{ height: 50 }}>
-                      <td style={{ textAlign: 'right', fontSize: '20px' }}>密碼</td>
-                      <td style={{ width: '1%' }} />
-                      <td>
-                        <Input.Password
-                          style={{ height: 30 }}
-                          defaultValue={password}
-                          placeholder="输入密碼"
-                          onChange={this.changePassword}
-                        />
-                      </td>
-                    </tr>
-                    <tr style={{ height: 50 }}>
-                      <td colSpan="3">
-                        <Button
-                          style={{ height: 30, width: '60%', fontSize: '18px' }}
-                          htmlType="submit"
-                          onClick={() => this.handleLogin()}
-                        >
-                          登入
-                        </Button>
-                      </td>
-                    </tr>
-                  </table>
-                </from>
-              </td>
-            </tr>
-          </table>
+      <div style={{ width: '100%', height: '100%' }}>
+        <div className="login_form">
+          <div>
+            <table className="table_container">
+              <tr>
+                <td style={{ width: '50%' }}>
+                  <img alt="cover" src={cover} style={{ float: 'right', width: '70%' }} />
+                </td>
+                <td style={{ width: '1%' }} />
+                <td>
+                  <from>
+                    <table>
+                      <tr><td colSpan="3" style={{ fontSize: '28px' }}><h1>{SYSTEM_TITLE}</h1></td></tr>
+                      <tr style={{ height: 50 }}>
+                        <td style={{ width: 60, textAlign: 'right', fontSize: '20px' }}>工號</td>
+                        <td style={{ width: 2 }} />
+                        <td>
+                          <Input
+                            style={{ width: 200, height: 30 }}
+                            defaultValue={username}
+                            placeholder="输入工号"
+                            onChange={this.changeUserName}
+                          />
+                        </td>
+                      </tr>
+                      <tr style={{ height: 50 }}>
+                        <td style={{ textAlign: 'right', fontSize: '20px' }}>密碼</td>
+                        <td style={{ width: '1%' }} />
+                        <td>
+                          <Input.Password
+                            style={{ width: 200, height: 30 }}
+                            defaultValue={password}
+                            placeholder="输入密碼"
+                            onChange={this.changePassword}
+                          />
+                        </td>
+                      </tr>
+                      <tr style={{ height: 50 }}>
+                        <td colSpan="3">
+                          <Button
+                            style={{ height: 30, width: 300, fontSize: '18px' }}
+                            htmlType="submit"
+                            onClick={() => this.handleLogin()}
+                          >
+                            登入
+                          </Button>
+                        </td>
+                      </tr>
+                    </table>
+                  </from>
+                </td>
+              </tr>
+            </table>
+          </div>
         </div>
       </div>
     );
