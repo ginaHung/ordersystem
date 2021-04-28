@@ -9,12 +9,57 @@
 //   '/api/login/testoracle',
 //   '/api/introduction/getIntroductionFile'];
 
-exports.SYSTEM_TITLE = '下午茶點餐系統';
-exports.LoginRouter = '/login';
-exports.HeaderPageRouter = '/orderlist';
+import React from 'react';
 
+const SYSTEM_TITLE = '下午茶點餐系統';
+const LoginRouter = '/login';
+const HeaderPageRouter = '/orderlist';
 
-exports.dataSource = [
+const defaultColumn = [
+  {
+    title: '單號',
+    dataIndex: 'id',
+    align: 'center',
+    width: 130,
+  },
+  {
+    title: '名稱',
+    dataIndex: 'name',
+    align: 'center',
+    width: 200,
+  },
+  {
+    title: '建立者',
+    dataIndex: 'user',
+    align: 'center',
+    width: 100,
+  },
+  {
+    title: '結案時間',
+    dataIndex: 'endtime',
+    align: 'center',
+    width: 200,
+  },
+  {
+    title: '描述',
+    dataIndex: 'dscribe',
+    align: 'left',
+    // width: 200,
+    render: (text, record) => (
+      <div>
+        {(record.dscribe.length > 30) ? `${record.dscribe.slice(0, 30)}...` : record.dscribe}
+      </div>
+    ),
+  },
+];
+
+const modeViewType = Object.freeze(
+  {
+    orderlistView: 'orderlistView', neworderView: 'myOrder', joinView: 'joinOrder',
+  },
+);
+
+const dataSource = [
   {
     id: '202104210000',
     name: '西湖区湖底公园1号',
@@ -114,3 +159,13 @@ exports.dataSource = [
     dscribe: '',
   },
 ];
+const dataSource2 = [];
+
+export {
+  SYSTEM_TITLE,
+  LoginRouter,
+  HeaderPageRouter,
+  modeViewType,
+  defaultColumn,
+  dataSource,
+};

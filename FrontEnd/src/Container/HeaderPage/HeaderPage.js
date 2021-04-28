@@ -8,13 +8,14 @@ import { Route } from 'react-router-dom';
 import { Layout, Button } from 'antd';
 
 import './HeaderPage.less';
-import OrderListPage from '../OrderListPage/OrderListPage';
 import { SYSTEM_TITLE, LoginRouter, HeaderPageRouter } from '../../utils/define';
+import OrderListPage from '../OrderListPage/OrderListPage';
 import icon from '../../../img/icon.png';
 
 const { Header, Content, Footer } = Layout;
+
 class HeaderPage extends React.Component {
-  refStep1 = React.createRef();
+  // refStep1 = React.createRef();
 
   initState = {
     loginsuccess: sessionStorage.getItem('login'),
@@ -98,7 +99,7 @@ class HeaderPage extends React.Component {
           </Header>
           <div className="scroll-style">
             <div className="content-style">
-              <Route key="4" path={HeaderPageRouter} component={OrderListPage} />
+              <Route key="4" path={`${HeaderPageRouter}/:view?`} component={OrderListPage} />
               {/* // render={(props) => (
                 //   <OrderListPage
                 //     {...props}
