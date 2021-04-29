@@ -21,6 +21,12 @@ const modeViewType = Object.freeze(
   },
 );
 
+const newOrderViewType = Object.freeze(
+  {
+    new: 'new', edit: 'edit', view: 'view',
+  },
+);
+
 
 const defaultColumn = [
   {
@@ -168,6 +174,7 @@ export {
   LoginRouter,
   HeaderPageRouter,
   modeViewType,
+  newOrderViewType,
   defaultColumn,
   dataSource,
 };

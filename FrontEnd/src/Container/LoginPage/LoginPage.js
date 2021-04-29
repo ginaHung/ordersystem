@@ -124,7 +124,7 @@ class LoginPage extends React.Component {
                           <Input
                             style={{ width: 200, height: 30 }}
                             defaultValue={username}
-                            placeholder="输入工号"
+                            placeholder="輸入工號"
                             onChange={this.changeUserName}
                           />
                         </td>
@@ -136,7 +136,7 @@ class LoginPage extends React.Component {
                           <Input.Password
                             style={{ width: 200, height: 30 }}
                             defaultValue={password}
-                            placeholder="输入密碼"
+                            placeholder="輸入密碼"
                             onChange={this.changePassword}
                           />
                         </td>

@@ -13,7 +13,7 @@ import { Tooltip, Table, Button, Divider, Input, message } from 'antd';
 // import { verify } from '../../service/API';
 import './OrderListPage.less';
 import {
-  LoginRouter, HeaderPageRouter, modeViewType,
+  LoginRouter, HeaderPageRouter, modeViewType, newOrderViewType,
   defaultColumn, dataSource,
 } from '../../utils/define';
 import imgAddOrder from '../../../img/add-button.png';
@@ -33,6 +33,7 @@ class OrderListPage extends React.Component {
     allOrderListColumn: [], // 所有訂單 table header
 
     myOrderId: '',
+    newOrderView: newOrderViewType.new,
   }
 
   constructor(props) {
@@ -48,12 +49,16 @@ class OrderListPage extends React.Component {
 
   componentDidMount = async () => {
     const { username } = this.state;
+    const { view } = this.props.match.params;
     // console.log(ViewType);
     if (await this.IsNullOrEmpty(username)) {
       const { history } = this.props;
       history.push(LoginRouter);
     } else {
       try {
+        this.setState({
+          ViewType: view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view,
+        });
         await this.fnSetColumnHeader();
         await this.fnGetmyList();
         await this.fnGetallList();
@@ -66,6 +71,7 @@ class OrderListPage extends React.Component {
   // props update
   componentWillReceiveProps(nextProps) {
     const { view } = nextProps.match.params;
+    // console.log(view);
     this.setState({
       ViewType: view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view,
     });
@@ -160,18 +166,17 @@ class OrderListPage extends React.Component {
     const { history } = this.props;
     history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
     this.setState({
-      // ViewType: modeViewType.neworderView,
       myOrderId: '',
+      newOrderView: newOrderViewType.new,
     });
   }
 
-  btnEditOrderList = (id) => {
-    const { history } = this.props;
-    history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
+  btnEditOrderList = async (id) => {
     this.setState({
-      // ViewType: modeViewType.neworderView,
       myOrderId: id,
+      newOrderView: newOrderViewType.edit,
     });
+    this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}`);
   }
 
   btnDeleteOrderList = () => { }
@@ -199,7 +204,7 @@ class OrderListPage extends React.Component {
       ViewType,
       myOrderListColumn, allOrderListColumn,
       myOrderListArray, allOrderListArray,
-      myOrderId,
+      myOrderId, newOrderView,
     } = this.state;
     return (
       <div>
@@ -263,6 +268,7 @@ class OrderListPage extends React.Component {
         { ViewType === modeViewType.neworderView ? (
           <NewOrderForm
             orderid={myOrderId}
+            viewType={newOrderView}
             fnReload={this.fnReload}
           />
         )
