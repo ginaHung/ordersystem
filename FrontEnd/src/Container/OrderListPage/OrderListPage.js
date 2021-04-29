@@ -1,3 +1,5 @@
+/* eslint-disable react/no-deprecated */
+/* eslint-disable max-len */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -11,19 +13,13 @@ import { Tooltip, Table, Button, Divider, Input, message } from 'antd';
 // import { verify } from '../../service/API';
 import './OrderListPage.less';
 import {
-  SYSTEM_TITLE,
   LoginRouter, HeaderPageRouter, modeViewType,
   defaultColumn, dataSource,
 } from '../../utils/define';
 import imgAddOrder from '../../../img/add-button.png';
-import NewOrderForm from '../../Component/NewOrderForm/NewOrderForm';
+import NewOrderForm from '../NewOrderForm/NewOrderForm';
 
 const { Search } = Input;
-// const modeViewType = Object.freeze(
-//   {
-//     orderlistView: 'orderlistView', neworderView: 'newOrder', joinView: 'joinOrder',
-//   },
-// );
 
 class OrderListPage extends React.Component {
 
@@ -46,7 +42,7 @@ class OrderListPage extends React.Component {
     };
   }
 
-  // #region mount
+  // #region mount ------------------------------------
 
   // componentWillMount = () => { }
 
@@ -67,6 +63,7 @@ class OrderListPage extends React.Component {
     }
   }
 
+  // props update
   componentWillReceiveProps(nextProps) {
     const { view } = nextProps.match.params;
     this.setState({
@@ -76,14 +73,14 @@ class OrderListPage extends React.Component {
 
   // componentWillUpdate = () => { }
 
-  componentDidUpdate = (lastProps, lastState) => {
-    const { ViewType } = this.state;
-    console.log(`u ViewType=${ViewType}`);
+  componentDidUpdate = () => {
+    // const { ViewType } = this.state;
+    // console.log(`u ViewType=${ViewType}`);
   }
 
-  // #endregion mount
+  // #endregion mount ---------------------------------
 
-  // #region get list
+  // #region get list ---------------------------------
 
   fnSetColumnHeader = async () => {
     const tempMyArr = [];
@@ -105,7 +102,7 @@ class OrderListPage extends React.Component {
             編輯
           </Button>
           <Button size="middle" style={{ marginLeft: 5 }} onClick={() => this.btnDeleteOrderList()}>
-            刪除
+            完成
           </Button>
         </div>
       ),
@@ -118,7 +115,11 @@ class OrderListPage extends React.Component {
       align: 'center',
       render: (text, record) => (
         <div>
-          <Button size="middle" onClick={() => this.btnJoinOrder()}>
+          <Button
+            size="middle"
+            disabled={new Date(`${record.endtime}:59`) < new Date()}
+            onClick={() => this.btnJoinOrder()}
+          >
             +1
           </Button>
         </div>
@@ -131,7 +132,15 @@ class OrderListPage extends React.Component {
     });
   }
 
+  fnReload = async () => {
+    console.log('reload');
+    this.handlePage(HeaderPageRouter);
+    await this.fnGetmyList();
+    await this.fnGetallList();
+  }
+
   fnGetmyList = async () => {
+    // console.log('get list');
     this.setState({
       myOrderListArray: dataSource,
     });
@@ -143,9 +152,9 @@ class OrderListPage extends React.Component {
     });
   }
 
-  // #endregion get list
+  // #endregion get list ------------------------------
 
-  // #region btn
+  // #region btn --------------------------------------
 
   btnAddOrderList = () => {
     const { history } = this.props;
@@ -171,7 +180,7 @@ class OrderListPage extends React.Component {
 
   btnJoinOrder = () => { }
 
-  // #endregion btn
+  // #endregion btn ----------------------------------
 
   handlePage = (path) => {
     const { history } = this.props;
@@ -254,8 +263,8 @@ class OrderListPage extends React.Component {
         { ViewType === modeViewType.neworderView ? (
           <NewOrderForm
             orderid={myOrderId}
+            fnReload={this.fnReload}
           />
-          // <div>123</div>
         )
           : <div />}
       </div>
@@ -264,17 +273,14 @@ class OrderListPage extends React.Component {
 }
 
 OrderListPage.propTypes = {
-  // jumpRoute: PropTypes.func,
   history: PropTypes.func,
+  // eslint-disable-next-line react/forbid-prop-types
   match: PropTypes.object,
-  // ViewType: PropTypes.element,
 };
 
 OrderListPage.defaultProps = {
-  // jumpRoute: null,
   history: null,
   match: {},
-  // ViewType: '',
 };
 
 export default OrderListPage;

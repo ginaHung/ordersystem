@@ -64,6 +64,7 @@ class NewOrderForm extends React.Component {
   componentWillMount = () => { }
 
   componentDidMount = async () => {
+    console.log('123');
     // const { username } = this.state;
     // console.log(username);
     // if (await this.IsNullOrEmpty(username)) {
@@ -83,13 +84,6 @@ class NewOrderForm extends React.Component {
   componentWillUpdate = () => { }
 
   componentDidUpdate = (lastProps, lastState) => { }
-
-  changeUserName = (e) => {
-    // console.log('changeDomain', e.target.value);
-    this.setState({
-      username: e.target.value,
-    });
-  }
 
   // #endregion mount
 
@@ -174,69 +168,77 @@ class NewOrderForm extends React.Component {
     history.push(path);
   }
 
+  fnReload = async (path) => {
+    const { fnReload } = this.props;
+    await fnReload();
+  }
+
   render() {
     const {
-      orderid
+      orderid,
     } = this.state;
     return (
       <div>
         my id="{orderid}"
-      </div>
-    //   <div>
-    //     <div className="panel-style" style={{ height: 290 }}>
-    //       <div style={{ marginTop: 5, width: '100%' }}>
-    //         <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
-    //           我建立的訂單2
-    //         </span>
-    //         <Tooltip placement="topLeft" title="建立訂單">
-    //           <a onClick={() => this.btnAddOrderList()}>
-    //             <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
-    //           </a>
-    //         </Tooltip>
-    //       </div>
-    //       <div style={{ marginTop: 5, width: '100%', height: 180 }}>
-    //         <Table
-    //           columns={myOrderListColumn}
-    //           dataSource={myOrderListArray}
-    //           bordered
-    //           size="small"
-    //           pagination={{
-    //             defaultPageSize: 3,
-    //           }}
-    //           scroll={{ x: 'max-content' }}
-    //           locale={{ emptyText: '快來揪團 > <' }}
-    //         />
-    //       </div>
-    //     </div>
-    //     <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
+        <Button size="middle" onClick={() => this.fnReload()}>
+        return
+        </Button>
+    </div>
+      //   <div>
+      //     <div className="panel-style" style={{ height: 290 }}>
+      //       <div style={{ marginTop: 5, width: '100%' }}>
+      //         <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+      //           我建立的訂單2
+      //         </span>
+      //         <Tooltip placement="topLeft" title="建立訂單">
+      //           <a onClick={() => this.btnAddOrderList()}>
+      //             <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
+      //           </a>
+      //         </Tooltip>
+      //       </div>
+      //       <div style={{ marginTop: 5, width: '100%', height: 180 }}>
+      //         <Table
+      //           columns={myOrderListColumn}
+      //           dataSource={myOrderListArray}
+      //           bordered
+      //           size="small"
+      //           pagination={{
+      //             defaultPageSize: 3,
+      //           }}
+      //           scroll={{ x: 'max-content' }}
+      //           locale={{ emptyText: '快來揪團 > <' }}
+      //         />
+      //       </div>
+      //     </div>
+      //     <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
 
-    //     <div className="panel-style">
-    //       <div style={{ marginTop: 5, width: '100%' }}>
-    //         <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
-    //           所有訂單
-    //         </span>
-    //         <Search
-    //           style={{ width: 200, marginLeft: 10 }}
-    //           allowClear="true"
-    //           placeholder="input search text"
-    //           onSearch={this.btnOnSearch}
-    //         />
-    //       </div>
-    //       <div style={{ marginTop: 5, width: '100%', height: 180 }}>
-    //         <Table
-    //           columns={allOrderListColumn}
-    //           dataSource={allOrderListArray}
-    //           bordered
-    //           size="small"
-    //           pagination={{
-    //             defaultPageSize: 10,
-    //           }}
-    //           scroll={{ x: 'max-content' }}
-    //         />
-    //       </div>
-    //     </div>
+      //     <div className="panel-style">
+      //       <div style={{ marginTop: 5, width: '100%' }}>
+      //         <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+      //           所有訂單
+      //         </span>
+      //         <Search
+      //           style={{ width: 200, marginLeft: 10 }}
+      //           allowClear="true"
+      //           placeholder="input search text"
+      //           onSearch={this.btnOnSearch}
+      //         />
+      //       </div>
+      //       <div style={{ marginTop: 5, width: '100%', height: 180 }}>
+      //         <Table
+      //           columns={allOrderListColumn}
+      //           dataSource={allOrderListArray}
+      //           bordered
+      //           size="small"
+      //           pagination={{
+      //             defaultPageSize: 10,
+      //           }}
+      //           scroll={{ x: 'max-content' }}
+      //         />
+      //       </div>
+      //     </div>
 
-    //   </div>
+      //   </div>
     );
   }
 }
