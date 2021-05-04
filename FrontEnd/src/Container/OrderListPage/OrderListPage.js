@@ -32,8 +32,8 @@ class OrderListPage extends React.Component {
     myOrderListColumn: [], // 我建立的訂單 table header
     allOrderListColumn: [], // 所有訂單 table header
 
-    myOrderId: '',
     newOrderView: newOrderViewType.new,
+    myOrderId: '',
   }
 
   constructor(props) {
@@ -48,9 +48,10 @@ class OrderListPage extends React.Component {
   // componentWillMount = () => { }
 
   componentDidMount = async () => {
-    const { username } = this.state;
-    const { view } = this.props.match.params;
-    // console.log(ViewType);
+    const { username, ViewType } = this.state;
+    const { view, id } = this.props.match.params;
+    // console.log(`'2' ${ViewType}`);
+
     if (await this.IsNullOrEmpty(username)) {
       const { history } = this.props;
       history.push(LoginRouter);
@@ -58,10 +59,13 @@ class OrderListPage extends React.Component {
       try {
         this.setState({
           ViewType: view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view,
+          myOrderId: await this.IsNullOrEmpty(id) ? '' : id,
         });
+        // console.log(`'1' ${ViewType}`);
         await this.fnSetColumnHeader();
         await this.fnGetmyList();
         await this.fnGetallList();
+
       } catch (e) {
         message.error(e.message);
       }
@@ -69,22 +73,30 @@ class OrderListPage extends React.Component {
   }
 
   // props update
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps = async (nextProps) => {
     const { view } = nextProps.match.params;
-    // console.log(view);
+    // console.log(`'componentWillReceiveProps' ${view} ${ViewType}`);
     this.setState({
       ViewType: view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view,
     });
+
+    const { ViewType } = this.state;
+    if (ViewType === modeViewType.orderlistView) {
+      await this.fnSetColumnHeader();
+      await this.fnGetmyList();
+      await this.fnGetallList();
+    }
   }
 
   // componentWillUpdate = () => { }
 
-  componentDidUpdate = () => {
+  componentDidUpdate = async () => {
     // const { ViewType } = this.state;
     // console.log(`u ViewType=${ViewType}`);
   }
 
   // #endregion mount ---------------------------------
+
 
   // #region get list ---------------------------------
 
@@ -160,15 +172,17 @@ class OrderListPage extends React.Component {
 
   // #endregion get list ------------------------------
 
+
   // #region btn --------------------------------------
 
   btnAddOrderList = () => {
     const { history } = this.props;
-    history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
+
     this.setState({
       myOrderId: '',
       newOrderView: newOrderViewType.new,
     });
+    history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
   }
 
   btnEditOrderList = async (id) => {
@@ -176,16 +190,23 @@ class OrderListPage extends React.Component {
       myOrderId: id,
       newOrderView: newOrderViewType.edit,
     });
-    this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}`);
+    this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}/${id}`);
   }
 
-  btnDeleteOrderList = () => { }
+  btnDeleteOrderList = () => {
 
-  btnOnSearch = (value) => { console.log(value); }
+  }
 
-  btnJoinOrder = () => { }
+  btnOnSearch = (value) => {
+    console.log(value);
+  }
+
+  btnJoinOrder = () => {
+
+  }
 
   // #endregion btn ----------------------------------
+
 
   handlePage = (path) => {
     const { history } = this.props;
@@ -198,6 +219,8 @@ class OrderListPage extends React.Component {
     }
     return false;
   }
+
+
 
   render() {
     const {
@@ -248,7 +271,7 @@ class OrderListPage extends React.Component {
                   onSearch={this.btnOnSearch}
                 />
               </div>
-              <div style={{ marginTop: 5, width: '100%', height: 180 }}>
+              <div style={{ marginTop: 5, width: '100%' }}>
                 <Table
                   columns={allOrderListColumn}
                   dataSource={allOrderListArray}

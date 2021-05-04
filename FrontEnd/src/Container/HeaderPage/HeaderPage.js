@@ -99,7 +99,7 @@ class HeaderPage extends React.Component {
           </Header>
           <div className="scroll-style">
             <div className="content-style">
-              <Route key="4" path={`${HeaderPageRouter}/:view?`} component={OrderListPage} />
+              <Route key="4" path={`${HeaderPageRouter}/:view?/:id?`} component={OrderListPage} />
               {/* // render={(props) => (
                 //   <OrderListPage
                 //     {...props}
