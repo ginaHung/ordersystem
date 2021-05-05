@@ -9,10 +9,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import {
-  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber,
+  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber, Popconfirm,
 } from 'antd';
 import {
-  PlusOutlined, LoadingOutlined, DoubleRightOutlined, DoubleLeftOutlined,
+  PlusOutlined, LoadingOutlined, DoubleRightOutlined, DoubleLeftOutlined, QuestionCircleOutlined, PlusCircleOutlined,
 } from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
@@ -50,21 +50,23 @@ class NewOrderForm extends React.Component {
     },
 
     myOrderColumn: [],
-    myOrderRow: [{
-      id: '+0',
-      heaader_id: '',
-      // user_id: sessionStorage.getItem('emplid'),
-      user_name: '',
-      item_name: '',
-      class_1: '',
-      class_2: '',
-      class_3: '',
-      class_4: '',
-      class_5: '',
-      remark: '',
-      price: '',
-      type: '2',
-    }],
+    myOrderRow: [],
+    // myOrderRow: [{
+    //   id: '+0',
+    //   heaader_id: '',
+    //   // user_id: sessionStorage.getItem('emplid'),
+    //   user_name: '',
+    //   item_name: '',
+    //   class_1: '',
+    //   class_2: '',
+    //   class_3: '',
+    //   class_4: '',
+    //   class_5: '',
+    //   remark: '',
+    //   price: '',
+    //   type: '2',
+    // }],
+
     mydelOrderRow: [],
 
     visibleClass: 2,
@@ -191,7 +193,13 @@ class NewOrderForm extends React.Component {
         dataIndex: 'id',
         align: 'center',
         width: 100,
-        title: '#',
+        title:
+          // eslint-disable-next-line react/jsx-indent
+          <Tooltip placement="topLeft" title="新增">
+            <a onClick={() => this.fnAddNewOrderRow()}>
+              <img alt="icon" src={imgAddOrder} style={{ width: 25 }} />
+            </a>
+          </Tooltip>,
         render: (text, record, index) => (
           <div>
             <Tooltip placement="topLeft" title="刪除">
@@ -637,9 +645,16 @@ class NewOrderForm extends React.Component {
     const tempArray = myOrderRow;
     const index = myOrderRow.findIndex((p) => p.id === id);
 
-    tempArray[index].type = state;
+    if (state === '1'
+      && (await this.IsNullOrEmpty(tempArray[index].user_name)
+        || await this.IsNullOrEmpty(tempArray[index].item_name)
+        || await this.IsNullOrEmpty(tempArray[index].price))
+    ) {
+      message.warning('部分內容不可為空');
+    } else {
+      tempArray[index].type = state;
+    }
     this.setState({ myOrderRow: tempArray });
-    // console.log(myOrderRow);
   }
 
   fndelOrderRow = async (id) => {
@@ -649,9 +664,11 @@ class NewOrderForm extends React.Component {
     // const index = tempArray.findIndex((p) => p.id === id);
     // console.log(`index=${index}`);
 
-    tempdelArray.push(id);
+    if (id.substring(0, 1) !== '+') {
+      tempdelArray.push(id);
+    }
     // tempArray.splice(index, 1);
-    // console.log(tempArray);
+    console.log(tempdelArray);
 
     this.setState({
       myOrderRow: myOrderRow.filter((item) => item.id !== id),
@@ -684,13 +701,6 @@ class NewOrderForm extends React.Component {
     } = this.state;
     return (
       <div>
-        {/* <div>
-          my id="{orderid}"
-          <Button size="middle" onClick={() => this.fnReload()}>
-            return
-          </Button>
-        </div> */}
-
         <div className="orderheader">
           <div style={{ marginTop: 5, width: '100%' }}>
             <span style={{ color: 'red', fontSize: '28px', fontWeight: 'bold' }}>*</span>
@@ -705,7 +715,18 @@ class NewOrderForm extends React.Component {
               onChange={(e) => this.changeOrderHeader(e, 'orderName')}
             />
             <span style={{ fontSize: '20px', fontWeight: 'bold' }}> ({myOrderHeader.orderNum})</span>
-            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>({orderId})</span>
+            {/* <span style={{ fontSize: '20px', fontWeight: 'bold' }}>({orderId})</span> */}
+            <Popconfirm
+              title="訂單完成後將會刪除紀錄，確定要完成嗎?"
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              onConfirm={() => this.fnReload()}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>完成訂單</Button>
+            </Popconfirm>
+            <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.fnReload()}>取消</Button>
+            <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.fnReload()}>儲存</Button>
           </div>
 
           <div style={{ marginTop: 10, width: '100%' }}>
@@ -758,7 +779,6 @@ class NewOrderForm extends React.Component {
                       minuteStep={15}
                       onChange={this.changetxtorderEndTime}
                     />
-                    {/* <span style={{ fontSize: '16px', marginLeft: 5 }}>{orderEndDate} {orderEndTime}</span> */}
                   </div>
                 </td>
                 <td rowSpan="3" style={{ verticalAlign: 'top' }}>
@@ -768,7 +788,7 @@ class NewOrderForm extends React.Component {
                     onChange={this.changeImgurl}
                   >
                     <Button className="uploadbtn">
-                      {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%' }} />
+                      {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%', height: '100%' }} />
                         : (
                           <div>
                             {loading ? <LoadingOutlined style={{ fontSize: 16 }} /> : <PlusOutlined style={{ fontSize: 16 }} />}
@@ -827,11 +847,11 @@ class NewOrderForm extends React.Component {
             <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
               訂單樣式
             </span>
-            <Tooltip placement="topLeft" title="新增">
+            {/* <Tooltip placement="topLeft" title="新增">
               <a onClick={() => this.fnAddNewOrderRow()}>
                 <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
               </a>
-            </Tooltip>
+            </Tooltip> */}
           </div>
           <div style={{ marginTop: 5, width: '100%', height: '100%' }}>
             <Table
@@ -839,6 +859,7 @@ class NewOrderForm extends React.Component {
               dataSource={myOrderRow}
               bordered
               size="small"
+              locale={{ emptyText: '點選左上角新增圖示來訂飲料 > <' }}
               pagination={{
                 total: myOrderRow.length,
                 pageSize: myOrderRow.length,

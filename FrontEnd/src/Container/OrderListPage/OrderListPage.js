@@ -118,7 +118,7 @@ class OrderListPage extends React.Component {
       render: (text, record) => (
         <div>
           <Button size="middle" onClick={() => this.btnEditOrderList(record.id)}>
-            編輯。完成
+            編輯 - 完成
           </Button>
         </div>
       ),
