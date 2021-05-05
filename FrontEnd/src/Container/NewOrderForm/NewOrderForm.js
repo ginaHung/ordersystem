@@ -565,7 +565,7 @@ class NewOrderForm extends React.Component {
     const tempRows = myOrderRow;
     const newRow = {
       id: `+${myOrderRow.length}`,
-      heaader_id: '',
+      heaader_id: ' ',
       // user_id: sessionStorage.getItem('emplid'),
       user_name: '222222',
       item_name: ' ',
@@ -578,9 +578,11 @@ class NewOrderForm extends React.Component {
       price: ' ',
       type: 0,
     };
-    tempRows.splice(0, 0, newRow);
-
-    this.setState({ myOrderRow: tempRows });
+    const thisList = JSON.parse(JSON.stringify(myOrderRow));
+    thisList.splice(0, 0, newRow);
+    // tempRows.splice(0, 0, newRow);
+    
+    this.setState({ myOrderRow: thisList });
   }
 
   handlePage = (path) => {
@@ -757,7 +759,7 @@ class NewOrderForm extends React.Component {
               </a>
             </Tooltip>
           </div>
-          <div style={{ marginTop: 5, width: '100%' }}>
+          <div style={{ marginTop: 5, width: '100%', height: '100%' }}>
             <Table
               columns={myOrderColumn}
               dataSource={myOrderRow}
