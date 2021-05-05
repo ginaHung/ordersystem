@@ -8,17 +8,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-// import { Route } from 'react-router-dom';
 import {
   Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, Form, InputNumber,
 } from 'antd';
-import {
-  CopyOutlined, PlusCircleOutlined, MinusCircleOutlined, PlusOutlined, LoadingOutlined,
-} from '@ant-design/icons';
+import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
 import {
-  SYSTEM_TITLE,
   LoginRouter, HeaderPageRouter, newOrderViewType,
   defaultColumn, NewOrderdata, dataSource,
 } from '../../utils/define';
@@ -36,16 +32,18 @@ class NewOrderForm extends React.Component {
     orderId: this.props.orderid,
     orderviewType: this.props.viewType,
 
-    orderNum: '',
-    orderName: '',
-    orderuserId: sessionStorage.getItem('emplid'),
-    orderuserName: '',
-    orderDiscribe: '',
-    orderEndDate: '',
-    orderEndTime: '',
-    orderCode: '',
-    orderManu: '',
-    OrderClass: ['', '', '', '', ''],
+    myOrderHeader: {
+      orderNum: '',
+      orderName: '',
+      orderuserId: sessionStorage.getItem('emplid'),
+      orderuserName: '',
+      orderDiscribe: '',
+      orderEndDate: '',
+      orderEndTime: '',
+      orderCode: '',
+      orderMenu: '',
+      OrderClass: ['', '', '', '', ''],
+    },
 
     myOrderColumn: [],
     myOrderRow: [{
@@ -83,7 +81,8 @@ class NewOrderForm extends React.Component {
   }
 
   componentDidMount = async () => {
-    const { username, orderId, myOrderRow } = this.state;
+    const { username, orderId, myOrderHeader, myOrderRow } = this.state;
+    const dataHeaderResult = myOrderHeader;
     let datarowResult = myOrderRow;
 
     if (await this.IsNullOrEmpty(username)) {
@@ -95,29 +94,31 @@ class NewOrderForm extends React.Component {
 
         // #region init
         if (await this.IsNullOrEmpty(orderId)) { // add
+          dataHeaderResult.orderNum = await this.createOrderNum();
+
           this.setState({
             orderviewType: newOrderViewType.new,
             orderId: '',
-            orderNum: await this.createOrderNum(),
+            myOrderHeader: dataHeaderResult,
           });
         } else { // edit, view
-          const dataheader = dataSource[orderId - 1];
+          const tempheader = dataSource[orderId - 1];
           datarowResult = NewOrderdata;
 
-          const tempClass = [dataheader.class_1, dataheader.class_2, dataheader.class_3, dataheader.class_4, dataheader.class_5];
-          const tempvisibleClassNum = tempClass.indexOf('') > 0 ? tempClass.indexOf('') : 5;
+          dataHeaderResult.orderNum = tempheader.id_num;
+          dataHeaderResult.orderName = tempheader.name;
+          dataHeaderResult.orderuserId = tempheader.user_id;
+          dataHeaderResult.orderuserName = tempheader.user_name;
+          dataHeaderResult.orderDiscribe = tempheader.dscribe;
+          dataHeaderResult.orderEndDate = tempheader.endtime.substr(0, 10);
+          dataHeaderResult.orderEndTime = tempheader.endtime.substr(11);
+          dataHeaderResult.orderCode = tempheader.invite_code;
+          dataHeaderResult.orderMenu = tempheader.menu;
+          dataHeaderResult.OrderClass = [tempheader.class_1, tempheader.class_2, tempheader.class_3, tempheader.class_4, tempheader.class_5];
+          const tempvisibleClassNum = dataHeaderResult.OrderClass.indexOf('') > 0 ? dataHeaderResult.OrderClass.indexOf('') : 5;
 
           this.setState({
-            orderNum: dataheader.id_num,
-            orderName: dataheader.name,
-            orderuserId: dataheader.user_id,
-            orderuserName: dataheader.user_name,
-            orderDiscribe: dataheader.dscribe,
-            orderEndDate: dataheader.endtime.split(' ')[0],
-            orderEndTime: dataheader.endtime.split(' ')[1],
-            orderCode: dataheader.invite_code,
-            orderManu: dataheader.menu,
-            OrderClass: tempClass,
+            myOrderHeader: dataHeaderResult,
             myOrderRow: datarowResult,
             visibleClass: tempvisibleClassNum,
           });
@@ -127,8 +128,6 @@ class NewOrderForm extends React.Component {
         // #region table header
         await this.fnSetColumnHeader();
         // #endregion table header
-
-
 
       } catch (e) {
         message.error(e.message);
@@ -171,16 +170,22 @@ class NewOrderForm extends React.Component {
   }
 
   fnSetColumnHeader = async (flagAdd) => {
-    const { OrderClass, visibleClass, myOrderRow } = this.state;
+    const { visibleClass, myOrderHeader, myOrderRow } = this.state;
     let tempV = visibleClass;
     const tempRows = myOrderRow;
 
+    if (flagAdd !== undefined
+      && ((flagAdd && visibleClass >= 0 && visibleClass < 5) || (!flagAdd && visibleClass > 0 && visibleClass <= 5))) {
+      tempV = flagAdd === true ? tempV + 1 : tempV - 1;
+      // console.log(`visibleClass=${tempV},flagAdd=${flagAdd}`);
+    }
+
     const tempHeader = [
       {
-        title: '姓名',
         dataIndex: 'user_name',
         align: 'center',
         width: 150,
+        title: <div><span style={{ color: 'red', fontSize: '20px' }}>*</span>姓名</div>,
         render: (text, record, index) => (
           <Form className="columnLabel" colon={false} ref={this.formRef}>
             <Form.Item name="user_name" initialValue={record.user_name}>
@@ -200,13 +205,14 @@ class NewOrderForm extends React.Component {
         title:
           // eslint-disable-next-line react/jsx-indent
           <div>
-            <span style={{ width: 25, marginLeft: 50 }}>品項</span>
-            <Tooltip placement="topLeft" title="新增項目(最多5個)">
+            <span style={{ marginLeft: 40, color: 'red', fontSize: '20px' }}>*</span>
+            品項
+            <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
               <a onClick={() => this.fnSetColumnHeader(true)}>
                 <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
               </a>
             </Tooltip>
-            <Tooltip placement="topLeft" title="刪除項目">
+            <Tooltip placement="topLeft" title="刪除欄位">
               <a onClick={() => this.fnSetColumnHeader(false)}>
                 <img alt="icon" src={imgRemoveOrder} style={{ width: 25, marginLeft: 10 }} />
               </a>
@@ -230,11 +236,11 @@ class NewOrderForm extends React.Component {
       {
         dataIndex: 'class_1',
         align: 'center',
-        width: visibleClass >= 1 ? 130 : 0,
+        width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
           <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_1" initialValue={OrderClass[0]}>
+            <Form.Item name="class_1" initialValue={myOrderHeader.OrderClass[0]}>
               <Input
                 style={{ width: '100%', textAlign: 'center' }}
                 maxLength={10}
@@ -244,6 +250,9 @@ class NewOrderForm extends React.Component {
             </Form.Item>
           </Form>,
         render: (text, record, index) => (
+          // <div>
+          //   {
+          //     (record.type === 0) ? (
           <Form className="columnLabel" colon={false} ref={this.formRef}>
             <Form.Item name="class_1" initialValue={record.class_1}>
               <Input
@@ -254,15 +263,18 @@ class NewOrderForm extends React.Component {
               />
             </Form.Item>
           </Form>
+          //     ) : record.class_1
+          //   }
+          // </div>
         ),
       }, {
         dataIndex: 'class_2',
         align: 'center',
-        width: 130,
+        width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
           <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_2" initialValue={OrderClass[1]}>
+            <Form.Item name="class_2" initialValue={myOrderHeader.OrderClass[1]}>
               <Input
                 style={{ width: '100%', textAlign: 'center' }}
                 maxLength={10}
@@ -286,11 +298,11 @@ class NewOrderForm extends React.Component {
       }, {
         dataIndex: 'class_3',
         align: 'center',
-        width: 130,
+        width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
           <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_3" initialValue={OrderClass[2]}>
+            <Form.Item name="class_3" initialValue={myOrderHeader.OrderClass[2]}>
               <Input
                 style={{ width: '100%', textAlign: 'center' }}
                 maxLength={10}
@@ -314,11 +326,11 @@ class NewOrderForm extends React.Component {
       }, {
         dataIndex: 'class_4',
         align: 'center',
-        width: 130,
+        width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
           <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_4" initialValue={OrderClass[3]}>
+            <Form.Item name="class_4" initialValue={myOrderHeader.OrderClass[3]}>
               <Input
                 style={{ width: '100%', textAlign: 'center' }}
                 maxLength={10}
@@ -342,11 +354,11 @@ class NewOrderForm extends React.Component {
       }, {
         dataIndex: 'class_5',
         align: 'center',
-        width: 130,
+        width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
           <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_5" initialValue={OrderClass[4]}>
+            <Form.Item name="class_5" initialValue={myOrderHeader.OrderClass[4]}>
               <Input
                 style={{ width: '100%', textAlign: 'center' }}
                 maxLength={10}
@@ -371,9 +383,9 @@ class NewOrderForm extends React.Component {
     ];
     const header3 = [
       {
-        title: '價錢',
         dataIndex: 'price',
         align: 'center',
+        title: <div><span style={{ color: 'red', fontSize: '20px' }}>*</span>價錢</div>,
         width: 100,
         render: (text, record, index) => (
           <Form className="columnLabel" colon={false} ref={this.formRef}>
@@ -388,10 +400,10 @@ class NewOrderForm extends React.Component {
           </Form>
         ),
       }, {
-        title: '備註',
         dataIndex: 'remark',
         align: 'center',
-        // width: 300,
+        title: '備註',
+        width: tempV > 3 ? 300 : null,
         render: (text, record, index) => (
           <Form className="columnLabel" colon={false} ref={this.formRef}>
             <Form.Item name="remark" initialValue={record.remark}>
@@ -408,11 +420,6 @@ class NewOrderForm extends React.Component {
       },
     ];
 
-    if (flagAdd !== undefined
-      && ((flagAdd && visibleClass >= 0 && visibleClass < 5) || (!flagAdd && visibleClass > 0 && visibleClass <= 5))) {
-      tempV = flagAdd === true ? tempV + 1 : tempV - 1;
-      console.log(`visibleClass=${tempV},flagAdd=${flagAdd}`);
-    }
 
     for (let i = 0; i < tempV; i += 1) {
       tempHeader.push(header2[i]);
@@ -453,34 +460,34 @@ class NewOrderForm extends React.Component {
 
   // #region txt change
 
-  changetxtOrderName = (e) => {
+  changeOrderHeader = (e, att) => {
+    const { myOrderHeader } = this.state;
+    const tempHeader = myOrderHeader;
+    tempHeader[att] = e.target.value;
     this.setState({
-      orderName: e.target.value,
+      myOrderHeader: tempHeader,
     });
-  }
-
-  changetxtorderCode = (e) => {
-    this.setState({
-      orderCode: e.target.value,
-    });
-  }
-
-  changetxtorderDiscribe = (e) => {
-    this.setState({
-      orderDiscribe: e.target.value,
-    });
+    // console.log(myOrderHeader);
   }
 
   changetxtorderEndDate = (date, dateString) => {
+    const { myOrderHeader } = this.state;
+    const tempHeader = myOrderHeader;
+    tempHeader.orderEndDate = dateString;
     this.setState({
-      orderEndDate: dateString,
+      myOrderHeader: tempHeader,
     });
+    // console.log(myOrderHeader);
   }
 
   changetxtorderEndTime = (time, timeString) => {
+    const { myOrderHeader } = this.state;
+    const tempHeader = myOrderHeader;
+    tempHeader.orderEndTime = timeString;
     this.setState({
-      orderEndTime: timeString,
+      myOrderHeader: tempHeader,
     });
+    // console.log(myOrderHeader);
   }
 
   getBase64 = (img, callback) => {
@@ -490,28 +497,38 @@ class NewOrderForm extends React.Component {
   }
 
   changeImgurl = (info) => {
+    const { myOrderHeader } = this.state;
+    const tempHeader = myOrderHeader;
+
     if (info.file.status === 'uploading') {
       this.setState({ loading: true });
       return;
     }
-    this.getBase64(info.file.originFileObj, (image) => this.setState({
-      orderManu: image,
-      loading: false,
-    }));
+
+    this.getBase64(info.file.originFileObj, (image) => {
+      tempHeader.orderMenu = image;
+      this.setState({
+        myOrderHeader: tempHeader,
+        loading: false,
+      });
+    });
+
+    // console.log(myOrderHeader);
   }
 
   deleteImgurl = () => {
-    const { orderManu } = this.state;
-    if (orderManu) {
-      this.setState({
-        orderManu: '',
-      });
-    }
+    const { myOrderHeader } = this.state;
+    const tempHeader = myOrderHeader;
+    tempHeader.orderMenu = '';
+    this.setState({
+      myOrderHeader: tempHeader,
+    });
+    // console.log(myOrderHeader);
   }
 
   previewImgurl = () => {
-    const { orderManu } = this.state;
-    if (orderManu) {
+    const { myOrderHeader } = this.state;
+    if (myOrderHeader.orderMenu) {
       this.setState({
         // previewVisible: true,
       });
@@ -519,11 +536,11 @@ class NewOrderForm extends React.Component {
   }
 
   ChangeTableColumnName = (e, column) => {
-    const { OrderClass } = this.state;
-    const thisArray = OrderClass;
-    thisArray[column] = e.target.value.trim();
-    // console.log(thisArray);
-    this.setState({ OrderClass: thisArray });
+    const { myOrderHeader } = this.state;
+    const tempHeader = myOrderHeader;
+    tempHeader.OrderClass[column] = e.target.value.trim();
+    this.setState({ myOrderHeader: tempHeader });
+    // console.log(myOrderHeader);
   };
 
   ChangeTableCell = (e, id, column) => {
@@ -532,17 +549,39 @@ class NewOrderForm extends React.Component {
     const { myOrderRow } = this.state;
     const thisArray = myOrderRow;
     const index = myOrderRow.findIndex((p) => p.id === id);
-    console.log(`id=${id},index=${index}`);
+    // console.log(`id=${id},index=${index}`);
 
     const temp = e.target === undefined ? e : e.target.value;
     thisArray[index][column] = temp;
-    console.log(thisArray);
     this.setState({ myOrderRow: thisArray });
+    // console.log(thisArray);
   };
-
 
   // #endregion txt change
 
+
+  fnAddNewOrderRow = async () => {
+    const { myOrderRow } = this.state;
+    const tempRows = myOrderRow;
+    const newRow = {
+      id: `+${myOrderRow.length}`,
+      heaader_id: '',
+      // user_id: sessionStorage.getItem('emplid'),
+      user_name: '222222',
+      item_name: ' ',
+      class_1: ' ',
+      class_2: ' ',
+      class_3: ' ',
+      class_4: ' ',
+      class_5: ' ',
+      remark: ' ',
+      price: ' ',
+      type: 0,
+    };
+    tempRows.splice(0, 0, newRow);
+
+    this.setState({ myOrderRow: tempRows });
+  }
 
   handlePage = (path) => {
     const { history } = this.props;
@@ -565,9 +604,7 @@ class NewOrderForm extends React.Component {
   render() {
     const {
       orderviewType, loading,
-      orderId, orderNum, orderName, orderuserId, orderuserName,
-      orderCode, orderDiscribe, orderEndDate, orderEndTime, orderManu, OrderClass,
-      myOrderColumn, myOrderRow,
+      orderId, myOrderColumn, myOrderHeader, myOrderRow,
     } = this.state;
     return (
       <div>
@@ -587,11 +624,11 @@ class NewOrderForm extends React.Component {
               style={{
                 width: 250, fontSize: '20px', fontWeight: 'bold', marginLeft: 5, backgroundColor: 'inherit',
               }}
-              value={orderName}
+              value={myOrderHeader.orderName}
               placeholder="輸入訂單名稱"
-              onChange={this.changetxtOrderName}
+              onChange={(e) => this.changeOrderHeader(e, 'orderName')}
             />
-            <span style={{ fontSize: '20px', fontWeight: 'bold' }}> ({orderNum})</span>
+            <span style={{ fontSize: '20px', fontWeight: 'bold' }}> ({myOrderHeader.orderNum})</span>
             <span style={{ fontSize: '20px', fontWeight: 'bold' }}>({orderId})</span>
           </div>
 
@@ -600,7 +637,7 @@ class NewOrderForm extends React.Component {
               <tr>
                 <td className="table-col1">建立者:</td>
                 <td className="table-col2">
-                  <span style={{ fontSize: '16px', marginLeft: 5 }}>{orderuserId} - {orderuserName}</span>
+                  <span style={{ fontSize: '16px', marginLeft: 5 }}>{myOrderHeader.orderuserId} - {myOrderHeader.orderuserName}</span>
                 </td>
                 <td>
                   <span>Menu</span>
@@ -609,7 +646,7 @@ class NewOrderForm extends React.Component {
                     src={BTN_PHOTO_DELETE_NORMAL}
                     style={{
                       marginLeft: 10,
-                      cursor: orderManu ? 'pointer' : 'not-allowed',
+                      cursor: myOrderHeader.orderMenu ? 'pointer' : 'not-allowed',
                     }}
                     onClick={() => this.deleteImgurl()}
                   />
@@ -618,7 +655,7 @@ class NewOrderForm extends React.Component {
                     src={BTN_PHOTO_VIEW_NORMAL}
                     style={{
                       marginLeft: 10,
-                      cursor: orderManu ? 'pointer' : 'not-allowed',
+                      cursor: myOrderHeader.orderMenu ? 'pointer' : 'not-allowed',
                     }}
                     onClick={() => this.previewImgurl()}
                   />
@@ -633,14 +670,14 @@ class NewOrderForm extends React.Component {
                   <div>
                     <DatePicker
                       style={{ width: '150px', marginLeft: 5, backgroundColor: 'inherit' }}
-                      value={(orderEndDate === '') ? orderEndDate : moment(orderEndDate, 'YYYY/MM/DD')}
+                      value={(myOrderHeader.orderEndDate === '') ? '' : moment(myOrderHeader.orderEndDate, 'YYYY/MM/DD')}
                       format="YYYY/MM/DD"
                       disabledDate={this.disabledDate}
                       onChange={this.changetxtorderEndDate}
                     />
                     <TimePicker
                       style={{ width: '150px', marginLeft: 5, backgroundColor: 'inherit' }}
-                      value={(orderEndTime === '') ? orderEndTime : moment(orderEndTime, 'HH:mm')}
+                      value={(myOrderHeader.orderEndTime === '') ? '' : moment(myOrderHeader.orderEndTime, 'HH:mm')}
                       format="HH:mm"
                       minuteStep={15}
                       onChange={this.changetxtorderEndTime}
@@ -655,7 +692,7 @@ class NewOrderForm extends React.Component {
                     onChange={this.changeImgurl}
                   >
                     <Button className="uploadbtn">
-                      {orderManu ? <img src={orderManu} alt="avatar" style={{ width: '100%' }} />
+                      {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%' }} />
                         : (
                           <div>
                             {loading ? <LoadingOutlined style={{ fontSize: 16 }} /> : <PlusOutlined style={{ fontSize: 16 }} />}
@@ -676,9 +713,9 @@ class NewOrderForm extends React.Component {
                     <Input
                       style={{ width: '90%', marginLeft: 5, backgroundColor: 'inherit' }}
                       allowClear
-                      value={orderCode}
+                      value={myOrderHeader.orderCode}
                       placeholder="請輸入邀請碼"
-                      onChange={this.changetxtorderCode}
+                      onChange={(e) => this.changeOrderHeader(e, 'orderCode')}
                     />
                     {/* <span style={{ fontSize: '16px', marginLeft: 5 }}>{orderCode}</span> */}
                   </div>
@@ -692,12 +729,12 @@ class NewOrderForm extends React.Component {
                       style={{
                         width: '90%', fontWeight: 'bold', marginLeft: 5, backgroundColor: 'inherit',
                       }}
-                      value={orderDiscribe}
+                      value={myOrderHeader.orderDiscribe}
                       onScroll
                       rows={5}
                       showCount
                       maxLength={500}
-                      onChange={this.changetxtorderDiscribe}
+                      onChange={(e) => this.changeOrderHeader(e, 'orderDiscribe')}
                     />
                     {/* <span style={{ fontSize: '16px', marginLeft: 5 }}>{orderDiscribe}</span> */}
                   </div>
@@ -705,30 +742,33 @@ class NewOrderForm extends React.Component {
               </tr>
             </table>
           </div>
-
-          {/* <Divider style={{ width: '60%', backgroundColor: 'green' }} />
-          <div>123</div> */}
         </div>
 
         <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
+
         <div className="orderbody">
           <div style={{ marginTop: 5, width: '100%' }}>
             <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
               訂單樣式
             </span>
+            <Tooltip placement="topLeft" title="add">
+              <a onClick={() => this.fnAddNewOrderRow()}>
+                <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
+              </a>
+            </Tooltip>
           </div>
           <div style={{ marginTop: 5, width: '100%' }}>
             <Table
               columns={myOrderColumn}
               dataSource={myOrderRow}
               bordered
-              // size="small"
+              size="small"
               pagination={{
                 total: NewOrderdata.length,
                 pageSize: NewOrderdata.length,
                 hideOnSinglePage: true,
               }}
-              scroll={{ x: 'max-content', y: 600 }}
+              scroll={{ x: 'max-content' }}
             />
           </div>
         </div>

@@ -80,7 +80,7 @@ const NewOrderdata = [{
   class_5: 'class_5_1',
   remark: 'remark_1',
   price: '90',
-  type: 0,
+  type: 1,
 }, {
   id: '2',
   heaader_id: '1',
@@ -155,6 +155,7 @@ const dataSource = [
     class_3: 'c3-1',
     class_4: '',
     class_5: '',
+    orderManu: '',
   }, {
     id: '2',
     id_num: '20210421-0002',
