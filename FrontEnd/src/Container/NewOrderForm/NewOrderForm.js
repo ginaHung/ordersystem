@@ -9,9 +9,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import {
-  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, Form, InputNumber,
+  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber,
 } from 'antd';
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined, LoadingOutlined, DoubleRightOutlined, DoubleLeftOutlined,
+} from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
 import {
@@ -25,7 +27,6 @@ import imgAddOrder from '../../../img/add-btn.png';
 import imgRemoveOrder from '../../../img/minus-btn.png';
 import imgEditOrder from '../../../img/edit-btn.png';
 import imgOkOrder from '../../../img/ok-btn.png';
-import imgCancelOrder from '../../../img/cancel-btn.png';
 
 const { TextArea } = Input;
 
@@ -85,7 +86,7 @@ class NewOrderForm extends React.Component {
   }
 
   componentDidMount = async () => {
-    const { username, orderId, myOrderHeader, myOrderRow } = this.state;
+    const { username, orderviewType, orderId, myOrderHeader, myOrderRow } = this.state;
     const dataHeaderResult = myOrderHeader;
     let datarowResult = myOrderRow;
 
@@ -94,7 +95,7 @@ class NewOrderForm extends React.Component {
       history.push(LoginRouter);
     } else {
       try {
-        // console.log(`orderid= "${orderId}"`);
+        sessionStorage.setItem('view1type', orderviewType);
 
         // #region init
         if (await this.IsNullOrEmpty(orderId)) { // add
@@ -175,6 +176,7 @@ class NewOrderForm extends React.Component {
 
   fnSetColumnHeader = async (flagAdd) => {
     const { visibleClass, myOrderHeader, myOrderRow } = this.state;
+    const tempOrderHeader = myOrderHeader;
     let tempV = visibleClass;
     const tempRows = myOrderRow;
 
@@ -200,13 +202,13 @@ class NewOrderForm extends React.Component {
             {(this.fndecideRowType(record.id)) ? (
               <Tooltip placement="topLeft" title="OK">
                 <a onClick={() => this.fnEditNewOrderRow(record.id, '1')}>
-                  <img alt="icon" src={imgOkOrder} style={{ width: 25, marginLeft: 10 }} />
+                  <img alt="icon" src={imgOkOrder} style={{ width: 25, marginLeft: 15 }} />
                 </a>
               </Tooltip>
             ) : (
               <Tooltip placement="topLeft" title="編輯">
                 <a onClick={() => this.fnEditNewOrderRow(record.id, '2')}>
-                  <img alt="icon" src={imgEditOrder} style={{ width: 25, marginLeft: 10 }} />
+                  <img alt="icon" src={imgEditOrder} style={{ width: 25, marginLeft: 15 }} />
                 </a>
               </Tooltip>
             )}
@@ -240,15 +242,23 @@ class NewOrderForm extends React.Component {
           <div>
             <span style={{ marginLeft: 40, color: 'red', fontSize: '20px' }}>*</span>
             品項
-            <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
-              <a onClick={() => this.fnSetColumnHeader(true)}>
-                <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
-              </a>
-            </Tooltip>
             <Tooltip placement="topLeft" title="刪除欄位">
-              <a onClick={() => this.fnSetColumnHeader(false)}>
-                <img alt="icon" src={imgRemoveOrder} style={{ width: 25, marginLeft: 10 }} />
-              </a>
+              <Button
+                type="text"
+                icon={<DoubleLeftOutlined />}
+                size="small"
+                style={{ marginLeft: 10 }}
+                onClick={() => this.fnSetColumnHeader(false)}
+              />
+            </Tooltip>
+            <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
+              <Button
+                type="text"
+                icon={<DoubleRightOutlined />}
+                size="small"
+                // style={{ marginLeft: 1 }}
+                onClick={() => this.fnSetColumnHeader(true)}
+              />
             </Tooltip>
           </div>,
         render: (text, record, index) => (
@@ -456,6 +466,9 @@ class NewOrderForm extends React.Component {
         for (let j = tempV + 1; j <= 5; j += 1) {
           tempRows[i][`class_${j}`] = '';
         }
+      }
+      for (let j = tempV; j < 5; j += 1) {
+        tempOrderHeader.OrderClass[j] = '';
       }
     }
 
@@ -814,7 +827,7 @@ class NewOrderForm extends React.Component {
             <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
               訂單樣式
             </span>
-            <Tooltip placement="topLeft" title="add">
+            <Tooltip placement="topLeft" title="新增">
               <a onClick={() => this.fnAddNewOrderRow()}>
                 <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
               </a>

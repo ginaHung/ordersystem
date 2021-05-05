@@ -9,6 +9,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 // import { Route } from 'react-router-dom';
 import { Tooltip, Table, Button, Divider, Input, message } from 'antd';
+import { FileAddOutlined } from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
 import './OrderListPage.less';
@@ -111,16 +112,13 @@ class OrderListPage extends React.Component {
 
     tempMyArr.push({
       title: '操作',
-      width: 150,
+      width: 130,
       fixed: 'right',
       align: 'center',
       render: (text, record) => (
         <div>
           <Button size="middle" onClick={() => this.btnEditOrderList(record.id)}>
-            編輯
-          </Button>
-          <Button size="middle" style={{ marginLeft: 5 }} onClick={() => this.btnDeleteOrderList()}>
-            完成
+            編輯。完成
           </Button>
         </div>
       ),
@@ -128,7 +126,7 @@ class OrderListPage extends React.Component {
 
     tempAllArr.push({
       title: '操作',
-      width: 150,
+      width: 130,
       fixed: 'right',
       align: 'center',
       render: (text, record) => (
@@ -220,8 +218,6 @@ class OrderListPage extends React.Component {
     return false;
   }
 
-
-
   render() {
     const {
       ViewType,
@@ -239,10 +235,21 @@ class OrderListPage extends React.Component {
                   我建立的訂單
                 </span>
                 <Tooltip placement="topLeft" title="建立訂單">
+                  <Button
+                    shape="circle"
+                    type="danger"
+                    icon={<FileAddOutlined />}
+                    size="large"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => this.btnAddOrderList()}
+                  />
+                </Tooltip>
+                {/* <Tooltip placement="topLeft" title="建立訂單">
                   <a onClick={() => this.btnAddOrderList()}>
                     <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
                   </a>
-                </Tooltip>
+                </Tooltip> */}
+
               </div>
               <div style={{ marginTop: 5, width: '100%', height: 180 }}>
                 <Table
@@ -286,17 +293,20 @@ class OrderListPage extends React.Component {
             </div>
           </div>
         )
-          : <div />}
+          : <div />
+        }
 
-        { ViewType === modeViewType.neworderView ? (
-          <NewOrderForm
-            orderid={myOrderId}
-            viewType={newOrderView}
-            fnReload={this.fnReload}
-          />
-        )
-          : <div />}
-      </div>
+        {
+          ViewType === modeViewType.neworderView ? (
+            <NewOrderForm
+              orderid={myOrderId}
+              viewType={newOrderView}
+              fnReload={this.fnReload}
+            />
+          )
+            : <div />
+        }
+      </div >
     );
   }
 }
