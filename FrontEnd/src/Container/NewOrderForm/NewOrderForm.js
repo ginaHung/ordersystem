@@ -62,7 +62,7 @@ class NewOrderForm extends React.Component {
       class_5: '',
       remark: '',
       price: '',
-      type: '12',
+      type: '2',
     }],
     mydelOrderRow: [],
 
@@ -192,32 +192,23 @@ class NewOrderForm extends React.Component {
         title: '#',
         render: (text, record, index) => (
           <div>
+            <Tooltip placement="topLeft" title="刪除">
+              <a onClick={() => this.fndelOrderRow(record.id)}>
+                <img alt="icon" src={imgRemoveOrder} style={{ width: 25, marginLeft: 5 }} />
+              </a>
+            </Tooltip>
             {(this.fndecideRowType(record.id)) ? (
-              <div>
-                <Tooltip placement="topLeft" title="Cancel">
-                  <a onClick={() => this.fnEditNewOrderRow(record.id, '3')}>
-                    <img alt="icon" src={imgCancelOrder} style={{ width: 25, marginLeft: 5 }} />
-                  </a>
-                </Tooltip>
-                <Tooltip placement="topLeft" title="OK">
-                  <a onClick={() => this.fnEditNewOrderRow(record.id, '1')}>
-                    <img alt="icon" src={imgOkOrder} style={{ width: 25, marginLeft: 10 }} />
-                  </a>
-                </Tooltip>
-              </div>
+              <Tooltip placement="topLeft" title="OK">
+                <a onClick={() => this.fnEditNewOrderRow(record.id, '1')}>
+                  <img alt="icon" src={imgOkOrder} style={{ width: 25, marginLeft: 10 }} />
+                </a>
+              </Tooltip>
             ) : (
-              <div>
-                <Tooltip placement="topLeft" title="刪除">
-                  <a onClick={() => this.fndelNewOrderRow(record.id)}>
-                    <img alt="icon" src={imgRemoveOrder} style={{ width: 25, marginLeft: 5 }} />
-                  </a>
-                </Tooltip>
-                <Tooltip placement="topLeft" title="編輯">
-                  <a onClick={() => this.fnEditNewOrderRow(record.id, '2')}>
-                    <img alt="icon" src={imgEditOrder} style={{ width: 25, marginLeft: 10 }} />
-                  </a>
-                </Tooltip>
-              </div>
+              <Tooltip placement="topLeft" title="編輯">
+                <a onClick={() => this.fnEditNewOrderRow(record.id, '2')}>
+                  <img alt="icon" src={imgEditOrder} style={{ width: 25, marginLeft: 10 }} />
+                </a>
+              </Tooltip>
             )}
           </div>
         ),
@@ -229,16 +220,13 @@ class NewOrderForm extends React.Component {
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="user_name" initialValue={record.user_name}>
-                  <Input
-                    style={{ width: '100%', textAlign: 'center' }}
-                    maxLength={10}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'user_name')}
-                  />
-                </Form.Item>
-              </Form>
+              <Input
+                style={{ width: '100%', textAlign: 'center' }}
+                value={record.user_name}
+                maxLength={10}
+                // disabled={username === record.user_id}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'user_name')}
+              />
             )
               : record.user_name}
           </div>
@@ -266,16 +254,13 @@ class NewOrderForm extends React.Component {
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="item_name" initialValue={record.item_name}>
-                  <Input
-                    style={{ width: '100%' }}
-                    maxLength={30}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'item_name')}
-                  />
-                </Form.Item>
-              </Form>
+              <Input
+                style={{ width: '100%' }}
+                value={record.item_name}
+                maxLength={30}
+                // disabled={username === record.user_id}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'item_name')}
+              />
             )
               : record.item_name}
           </div>
@@ -289,29 +274,23 @@ class NewOrderForm extends React.Component {
         width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_1" initialValue={myOrderHeader.OrderClass[0]}>
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableColumnName(e, 0)}
-                placeholder="糖"
-              />
-            </Form.Item>
-          </Form>,
+          <Input
+            style={{ width: '100%', textAlign: 'center' }}
+            value={myOrderHeader.OrderClass[0]}
+            maxLength={10}
+            onChange={(e) => this.ChangeTableColumnName(e, 0)}
+            placeholder="糖"
+          />,
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="class_1" initialValue={record.class_1}>
-                  <Input
-                    style={{ width: '100%' }}
-                    maxLength={10}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_1')}
-                  />
-                </Form.Item>
-              </Form>
+              <Input
+                style={{ width: '100%' }}
+                value={record.class_1}
+                maxLength={10}
+                // disabled={username === record.user_id}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_1')}
+              />
             )
               : record.class_1}
           </div>
@@ -322,29 +301,23 @@ class NewOrderForm extends React.Component {
         width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_2" initialValue={myOrderHeader.OrderClass[1]}>
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableColumnName(e, 1)}
-                placeholder="冰"
-              />
-            </Form.Item>
-          </Form>,
+          <Input
+            style={{ width: '100%', textAlign: 'center' }}
+            value={myOrderHeader.OrderClass[1]}
+            maxLength={10}
+            onChange={(e) => this.ChangeTableColumnName(e, 1)}
+            placeholder="冰"
+          />,
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="class_2" initialValue={record.class_2}>
-                  <Input
-                    style={{ width: '100%' }}
-                    maxLength={10}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_2')}
-                  />
-                </Form.Item>
-              </Form>
+              <Input
+                style={{ width: '100%' }}
+                value={record.class_2}
+                maxLength={10}
+                // disabled={username === record.user_id}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_2')}
+              />
             )
               : record.class_2}
           </div>
@@ -355,29 +328,22 @@ class NewOrderForm extends React.Component {
         width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_3" initialValue={myOrderHeader.OrderClass[2]}>
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableColumnName(e, 2)}
-              // placeholder="冰"
-              />
-            </Form.Item>
-          </Form>,
+          <Input
+            style={{ width: '100%', textAlign: 'center' }}
+            value={myOrderHeader.OrderClass[2]}
+            maxLength={10}
+            onChange={(e) => this.ChangeTableColumnName(e, 2)}
+          />,
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="class_3" initialValue={record.class_3}>
-                  <Input
-                    style={{ width: '100%' }}
-                    maxLength={10}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_3')}
-                  />
-                </Form.Item>
-              </Form>
+              <Input
+                style={{ width: '100%' }}
+                value={record.class_3}
+                maxLength={10}
+                // disabled={username === record.user_id}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_3')}
+              />
             )
               : record.class_3}
           </div>
@@ -388,29 +354,22 @@ class NewOrderForm extends React.Component {
         width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_4" initialValue={myOrderHeader.OrderClass[3]}>
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableColumnName(e, 3)}
-              // placeholder="冰"
-              />
-            </Form.Item>
-          </Form>,
+          <Input
+            style={{ width: '100%', textAlign: 'center' }}
+            value={myOrderHeader.OrderClass[3]}
+            maxLength={10}
+            onChange={(e) => this.ChangeTableColumnName(e, 3)}
+          />,
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="class_4" initialValue={record.class_4}>
-                  <Input
-                    style={{ width: '100%' }}
-                    maxLength={10}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_4')}
-                  />
-                </Form.Item>
-              </Form>
+              <Input
+                style={{ width: '100%' }}
+                value={record.class_4}
+                maxLength={10}
+                // disabled={username === record.user_id}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_4')}
+              />
             )
               : record.class_4}
           </div>
@@ -421,29 +380,22 @@ class NewOrderForm extends React.Component {
         width: 150,
         title:
           // eslint-disable-next-line react/jsx-indent
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_5" initialValue={myOrderHeader.OrderClass[4]}>
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableColumnName(e, 4)}
-              // placeholder="冰"
-              />
-            </Form.Item>
-          </Form>,
+          <Input
+            style={{ width: '100%', textAlign: 'center' }}
+            value={myOrderHeader.OrderClass[4]}
+            maxLength={10}
+            onChange={(e) => this.ChangeTableColumnName(e, 4)}
+          />,
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="class_5" initialValue={record.class_5}>
-                  <Input
-                    style={{ width: '100%' }}
-                    maxLength={10}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_5')}
-                  />
-                </Form.Item>
-              </Form>
+              <Input
+                style={{ width: '100%' }}
+                value={record.class_5}
+                maxLength={10}
+                // disabled={username === record.user_id}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_5')}
+              />
             )
               : record.class_5}
           </div>
@@ -459,16 +411,12 @@ class NewOrderForm extends React.Component {
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="price" initialValue={record.price}>
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    min={0}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'price')}
-                  />
-                </Form.Item>
-              </Form>
+              <InputNumber
+                style={{ width: '100%' }}
+                value={record.price}
+                min={0}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'price')}
+              />
             )
               : record.price}
           </div>
@@ -481,17 +429,13 @@ class NewOrderForm extends React.Component {
         render: (text, record, index) => (
           <div>
             {(this.fndecideRowType(record.id)) ? (
-              <Form className="columnLabel" colon={false} ref={this.formRef}>
-                <Form.Item name="remark" initialValue={record.remark}>
-                  <TextArea
-                    style={{ width: '100%' }}
-                    rows={1}
-                    maxLength={200}
-                    // disabled={username === record.user_id}
-                    onChange={(e) => this.ChangeTableCell(e, record.id, 'remark')}
-                  />
-                </Form.Item>
-              </Form>
+              <TextArea
+                style={{ width: '100%' }}
+                value={record.remark}
+                rows={1}
+                maxLength={200}
+                onChange={(e) => this.ChangeTableCell(e, record.id, 'remark')}
+              />
             )
               : record.remark}
           </div>
@@ -655,7 +599,7 @@ class NewOrderForm extends React.Component {
       class_5: '',
       remark: '',
       price: '',
-      type: '12',
+      type: '2',
     };
     tempRows.unshift(newRow);
 
@@ -665,48 +609,39 @@ class NewOrderForm extends React.Component {
 
   fndecideRowType = (id) => {
     const { myOrderRow } = this.state;
-    const thisArray = myOrderRow;
-    const index = thisArray.findIndex((p) => p.id === id);
-    console.log(`index=${index}`);
-    const temptype = thisArray[index].type;
+    const tempArray = myOrderRow;
+    const index = tempArray.findIndex((p) => p.id === id);
     let result = false;
 
-    if (temptype.length >= 2) result = true;
-    console.log(`index=${index},result=${result}`);
+    // console.log(`index=${index}`);
+    if (index >= 0 && tempArray[index].type === '2') result = true;
+    // console.log(`index=${index},result=${result}`);
     return result;
   }
 
   fnEditNewOrderRow = async (id, state) => {
     const { myOrderRow } = this.state;
-    const thisArray = myOrderRow;
+    const tempArray = myOrderRow;
     const index = myOrderRow.findIndex((p) => p.id === id);
-    const temptype = thisArray[index].type;
 
-    if (state === '1') { // ok
-      thisArray[index].type = '1';
-    } else if (state === '2') { // edit
-      thisArray[index].type = `${temptype}2`;
-    } else if (state === '3') { // cancel
-      thisArray[index].type = temptype.substring(0, 1);
-    }
-
-    this.setState({ myOrderRow: thisArray });
+    tempArray[index].type = state;
+    this.setState({ myOrderRow: tempArray });
     // console.log(myOrderRow);
   }
 
-  fndelNewOrderRow = async (id) => {
+  fndelOrderRow = async (id) => {
     const { myOrderRow, mydelOrderRow } = this.state;
-    const tempArray = myOrderRow;
+    // const tempArray = myOrderRow;
     const tempdelArray = mydelOrderRow;
-    const index = tempArray.findIndex((p) => p.id === id);
-    console.log(`index=${index}`);
+    // const index = tempArray.findIndex((p) => p.id === id);
+    // console.log(`index=${index}`);
 
-    tempArray.splice(index, 1);
     tempdelArray.push(id);
-    console.log(tempArray);
+    // tempArray.splice(index, 1);
+    // console.log(tempArray);
 
     this.setState({
-      myOrderRow: tempArray,
+      myOrderRow: myOrderRow.filter((item) => item.id !== id),
       mydelOrderRow: tempdelArray,
     });
   }
