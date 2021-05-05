@@ -21,10 +21,11 @@ import {
 import './NewOrderForm.less';
 import BTN_PHOTO_DELETE_NORMAL from '../../../img/btn_photo_delete_normal.svg';
 import BTN_PHOTO_VIEW_NORMAL from '../../../img/btn_photo_view_normal.svg';
-import imgAddOrder from '../../../img/add-button.png';
-import imgRemoveOrder from '../../../img/minus-button.png';
-import imgEditOrder from '../../../img/edit-button.png';
-import imgOkOrder from '../../../img/ok-button.png';
+import imgAddOrder from '../../../img/add-btn.png';
+import imgRemoveOrder from '../../../img/minus-btn.png';
+import imgEditOrder from '../../../img/edit-btn.png';
+import imgOkOrder from '../../../img/ok-btn.png';
+import imgCancelOrder from '../../../img/cancel-btn.png';
 
 const { TextArea } = Input;
 
@@ -61,8 +62,9 @@ class NewOrderForm extends React.Component {
       class_5: '',
       remark: '',
       price: '',
-      type: '2',
+      type: '12',
     }],
+    mydelOrderRow: [],
 
     visibleClass: 2,
     loading: false,
@@ -190,23 +192,32 @@ class NewOrderForm extends React.Component {
         title: '#',
         render: (text, record, index) => (
           <div>
-            <Tooltip placement="topLeft" title="刪除">
-              <a onClick={() => this.fnSetColumnHeader(false)}>
-                <img alt="icon" src={imgRemoveOrder} style={{ width: 25, marginLeft: 5 }} />
-              </a>
-            </Tooltip>
-            {(record.type === '2') ? (
-              <Tooltip placement="topLeft" title="OK">
-                <a onClick={() => this.fnEditNewOrderRow(record.id, '1')}>
-                  <img alt="icon" src={imgOkOrder} style={{ width: 25, marginLeft: 10 }} />
-                </a>
-              </Tooltip>
+            {(this.fndecideRowType(record.id)) ? (
+              <div>
+                <Tooltip placement="topLeft" title="Cancel">
+                  <a onClick={() => this.fnEditNewOrderRow(record.id, '3')}>
+                    <img alt="icon" src={imgCancelOrder} style={{ width: 25, marginLeft: 5 }} />
+                  </a>
+                </Tooltip>
+                <Tooltip placement="topLeft" title="OK">
+                  <a onClick={() => this.fnEditNewOrderRow(record.id, '1')}>
+                    <img alt="icon" src={imgOkOrder} style={{ width: 25, marginLeft: 10 }} />
+                  </a>
+                </Tooltip>
+              </div>
             ) : (
-              <Tooltip placement="topLeft" title="編輯">
-                <a onClick={() => this.fnEditNewOrderRow(record.id, '2')}>
-                  <img alt="icon" src={imgEditOrder} style={{ width: 25, marginLeft: 10 }} />
-                </a>
-              </Tooltip>
+              <div>
+                <Tooltip placement="topLeft" title="刪除">
+                  <a onClick={() => this.fndelNewOrderRow(record.id)}>
+                    <img alt="icon" src={imgRemoveOrder} style={{ width: 25, marginLeft: 5 }} />
+                  </a>
+                </Tooltip>
+                <Tooltip placement="topLeft" title="編輯">
+                  <a onClick={() => this.fnEditNewOrderRow(record.id, '2')}>
+                    <img alt="icon" src={imgEditOrder} style={{ width: 25, marginLeft: 10 }} />
+                  </a>
+                </Tooltip>
+              </div>
             )}
           </div>
         ),
@@ -217,7 +228,7 @@ class NewOrderForm extends React.Component {
         title: <div><span style={{ color: 'red', fontSize: '20px' }}>*</span>姓名</div>,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="user_name" initialValue={record.user_name}>
                   <Input
@@ -254,7 +265,7 @@ class NewOrderForm extends React.Component {
           </div>,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="item_name" initialValue={record.item_name}>
                   <Input
@@ -290,7 +301,7 @@ class NewOrderForm extends React.Component {
           </Form>,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="class_1" initialValue={record.class_1}>
                   <Input
@@ -323,7 +334,7 @@ class NewOrderForm extends React.Component {
           </Form>,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="class_2" initialValue={record.class_2}>
                   <Input
@@ -356,7 +367,7 @@ class NewOrderForm extends React.Component {
           </Form>,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="class_3" initialValue={record.class_3}>
                   <Input
@@ -389,7 +400,7 @@ class NewOrderForm extends React.Component {
           </Form>,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="class_4" initialValue={record.class_4}>
                   <Input
@@ -422,7 +433,7 @@ class NewOrderForm extends React.Component {
           </Form>,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="class_5" initialValue={record.class_5}>
                   <Input
@@ -447,7 +458,7 @@ class NewOrderForm extends React.Component {
         width: 100,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="price" initialValue={record.price}>
                   <InputNumber
@@ -469,7 +480,7 @@ class NewOrderForm extends React.Component {
         width: tempV > 3 ? 300 : null,
         render: (text, record, index) => (
           <div>
-            {(record.type === '2') ? (
+            {(this.fndecideRowType(record.id)) ? (
               <Form className="columnLabel" colon={false} ref={this.formRef}>
                 <Form.Item name="remark" initialValue={record.remark}>
                   <TextArea
@@ -630,7 +641,6 @@ class NewOrderForm extends React.Component {
 
   fnAddNewOrderRow = async () => {
     const { orderId, myOrderRow } = this.state;
-    // const tempRows = [];
     const tempRows = JSON.parse(JSON.stringify(myOrderRow));
     const newRow = {
       id: `+${myOrderRow.length}`,
@@ -645,58 +655,60 @@ class NewOrderForm extends React.Component {
       class_5: '',
       remark: '',
       price: '',
-      type: '2',
+      type: '12',
     };
-    console.log(newRow);
     tempRows.unshift(newRow);
 
-    // tempRows.push(newRow);
-    // for (let i = 0; i < myOrderRow.length; i += 1) {
-    //   tempRows.push(myOrderRow[i]);
-    // }
-    console.log(tempRows);
+    // console.log(tempRows);
     this.setState({ myOrderRow: tempRows });
   }
 
-  fnEditNewOrderRow = async (id, type) => {
+  fndecideRowType = (id) => {
+    const { myOrderRow } = this.state;
+    const thisArray = myOrderRow;
+    const index = thisArray.findIndex((p) => p.id === id);
+    console.log(`index=${index}`);
+    const temptype = thisArray[index].type;
+    let result = false;
+
+    if (temptype.length >= 2) result = true;
+    console.log(`index=${index},result=${result}`);
+    return result;
+  }
+
+  fnEditNewOrderRow = async (id, state) => {
     const { myOrderRow } = this.state;
     const thisArray = myOrderRow;
     const index = myOrderRow.findIndex((p) => p.id === id);
-    console.log(`id=${id},index=${index},type=${type}`);
-    // thisArray[index].user_name = type;
-    thisArray[index].type = type;
+    const temptype = thisArray[index].type;
+
+    if (state === '1') { // ok
+      thisArray[index].type = '1';
+    } else if (state === '2') { // edit
+      thisArray[index].type = `${temptype}2`;
+    } else if (state === '3') { // cancel
+      thisArray[index].type = temptype.substring(0, 1);
+    }
+
     this.setState({ myOrderRow: thisArray });
-    console.log(myOrderRow);
+    // console.log(myOrderRow);
   }
 
-  fndelNewOrderRow = async () => {
-    // const { orderId, myOrderRow } = this.state;
-    // const tempRows = [];
-    // // const tempRows = JSON.parse(JSON.stringify(myOrderRow));
-    // const newRow = {
-    //   id: `+${myOrderRow.length}`,
-    //   heaader_id: orderId,
-    //   // user_id: sessionStorage.getItem('emplid'),
-    //   user_name: '222222',
-    //   item_name: ' ',
-    //   class_1: ' ',
-    //   class_2: ' ',
-    //   class_3: ' ',
-    //   class_4: ' ',
-    //   class_5: ' ',
-    //   remark: ' ',
-    //   price: ' ',
-    //   type: 0,
-    // };
-    // // console.log(newRow);
-    // // tempRows.unshift(newRow);
+  fndelNewOrderRow = async (id) => {
+    const { myOrderRow, mydelOrderRow } = this.state;
+    const tempArray = myOrderRow;
+    const tempdelArray = mydelOrderRow;
+    const index = tempArray.findIndex((p) => p.id === id);
+    console.log(`index=${index}`);
 
-    // tempRows.push(newRow);
-    // for (let i = 0; i < myOrderRow.length; i += 1) {
-    //   tempRows.push(myOrderRow[i]);
-    // }
-    // console.log(tempRows);
-    // this.setState({ myOrderRow: tempRows });
+    tempArray.splice(index, 1);
+    tempdelArray.push(id);
+    console.log(tempArray);
+
+    this.setState({
+      myOrderRow: tempArray,
+      mydelOrderRow: tempdelArray,
+    });
   }
 
   handlePage = (path) => {

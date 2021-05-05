@@ -16,7 +16,7 @@ import {
   LoginRouter, HeaderPageRouter, modeViewType, newOrderViewType,
   defaultColumn, dataSource,
 } from '../../utils/define';
-import imgAddOrder from '../../../img/add-button.png';
+import imgAddOrder from '../../../img/add-btn.png';
 import NewOrderForm from '../NewOrderForm/NewOrderForm';
 
 const { Search } = Input;
