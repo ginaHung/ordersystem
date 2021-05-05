@@ -70,7 +70,7 @@ const defaultColumn = [
 const NewOrderdata = [{
   id: '1',
   heaader_id: '1',
-  user_id: '10910305',
+  // user_id: '10910305',
   user_name: 'Gina',
   item_name: 'item_name_1',
   class_1: 'class_1_1',
@@ -84,7 +84,7 @@ const NewOrderdata = [{
 }, {
   id: '2',
   heaader_id: '1',
-  user_id: '10910305',
+  // user_id: '10910305',
   user_name: 'Gina',
   item_name: 'item_name_2',
   class_1: 'class_1_2',
@@ -98,7 +98,7 @@ const NewOrderdata = [{
 }, {
   id: '3',
   heaader_id: '1',
-  user_id: '10910305',
+  // user_id: '10910305',
   user_name: 'Gina',
   item_name: 'item_name_3',
   class_1: 'class_1_3',
@@ -112,7 +112,7 @@ const NewOrderdata = [{
 }, {
   id: '4',
   heaader_id: '1',
-  user_id: '10910305',
+  // user_id: '10910305',
   user_name: 'Gina',
   item_name: 'item_name_4',
   class_1: 'class_1_4',
@@ -126,7 +126,7 @@ const NewOrderdata = [{
 }, {
   id: '5',
   heaader_id: '1',
-  user_id: '10910305',
+  // user_id: '10910305',
   user_name: 'Gina',
   item_name: 'item_name_5',
   class_1: 'class_1_5',

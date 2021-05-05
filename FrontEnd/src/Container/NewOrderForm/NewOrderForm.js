@@ -23,6 +23,8 @@ import BTN_PHOTO_DELETE_NORMAL from '../../../img/btn_photo_delete_normal.svg';
 import BTN_PHOTO_VIEW_NORMAL from '../../../img/btn_photo_view_normal.svg';
 import imgAddOrder from '../../../img/add-button.png';
 import imgRemoveOrder from '../../../img/minus-button.png';
+import imgEditOrder from '../../../img/edit-button.png';
+import imgOkOrder from '../../../img/ok-button.png';
 
 const { TextArea } = Input;
 
@@ -47,7 +49,7 @@ class NewOrderForm extends React.Component {
 
     myOrderColumn: [],
     myOrderRow: [{
-      id: '',
+      id: '+0',
       heaader_id: '',
       // user_id: sessionStorage.getItem('emplid'),
       user_name: '',
@@ -59,7 +61,7 @@ class NewOrderForm extends React.Component {
       class_5: '',
       remark: '',
       price: '',
-      type: 0,
+      type: '2',
     }],
 
     visibleClass: 2,
@@ -182,21 +184,53 @@ class NewOrderForm extends React.Component {
 
     const tempHeader = [
       {
+        dataIndex: 'id',
+        align: 'center',
+        width: 100,
+        title: '#',
+        render: (text, record, index) => (
+          <div>
+            <Tooltip placement="topLeft" title="刪除">
+              <a onClick={() => this.fnSetColumnHeader(false)}>
+                <img alt="icon" src={imgRemoveOrder} style={{ width: 25, marginLeft: 5 }} />
+              </a>
+            </Tooltip>
+            {(record.type === '2') ? (
+              <Tooltip placement="topLeft" title="OK">
+                <a onClick={() => this.fnEditNewOrderRow(record.id, '1')}>
+                  <img alt="icon" src={imgOkOrder} style={{ width: 25, marginLeft: 10 }} />
+                </a>
+              </Tooltip>
+            ) : (
+              <Tooltip placement="topLeft" title="編輯">
+                <a onClick={() => this.fnEditNewOrderRow(record.id, '2')}>
+                  <img alt="icon" src={imgEditOrder} style={{ width: 25, marginLeft: 10 }} />
+                </a>
+              </Tooltip>
+            )}
+          </div>
+        ),
+      }, {
         dataIndex: 'user_name',
         align: 'center',
         width: 150,
         title: <div><span style={{ color: 'red', fontSize: '20px' }}>*</span>姓名</div>,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="user_name" initialValue={record.user_name}>
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                maxLength={10}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'user_name')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="user_name" initialValue={record.user_name}>
+                  <Input
+                    style={{ width: '100%', textAlign: 'center' }}
+                    maxLength={10}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'user_name')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.user_name}
+          </div>
         ),
       }, {
         dataIndex: 'item_name',
@@ -219,16 +253,21 @@ class NewOrderForm extends React.Component {
             </Tooltip>
           </div>,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="item_name" initialValue={record.item_name}>
-              <Input
-                style={{ width: '100%' }}
-                maxLength={30}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'item_name')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="item_name" initialValue={record.item_name}>
+                  <Input
+                    style={{ width: '100%' }}
+                    maxLength={30}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'item_name')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.item_name}
+          </div>
         ),
       },
     ];
@@ -250,22 +289,21 @@ class NewOrderForm extends React.Component {
             </Form.Item>
           </Form>,
         render: (text, record, index) => (
-          // <div>
-          //   {
-          //     (record.type === 0) ? (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_1" initialValue={record.class_1}>
-              <Input
-                style={{ width: '100%' }}
-                maxLength={10}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_1')}
-              />
-            </Form.Item>
-          </Form>
-          //     ) : record.class_1
-          //   }
-          // </div>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="class_1" initialValue={record.class_1}>
+                  <Input
+                    style={{ width: '100%' }}
+                    maxLength={10}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_1')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.class_1}
+          </div>
         ),
       }, {
         dataIndex: 'class_2',
@@ -284,16 +322,21 @@ class NewOrderForm extends React.Component {
             </Form.Item>
           </Form>,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_2" initialValue={record.class_2}>
-              <Input
-                style={{ width: '100%' }}
-                maxLength={10}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_2')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="class_2" initialValue={record.class_2}>
+                  <Input
+                    style={{ width: '100%' }}
+                    maxLength={10}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_2')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.class_2}
+          </div>
         ),
       }, {
         dataIndex: 'class_3',
@@ -312,16 +355,21 @@ class NewOrderForm extends React.Component {
             </Form.Item>
           </Form>,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_3" initialValue={record.class_3}>
-              <Input
-                style={{ width: '100%' }}
-                maxLength={10}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_3')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="class_3" initialValue={record.class_3}>
+                  <Input
+                    style={{ width: '100%' }}
+                    maxLength={10}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_3')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.class_3}
+          </div>
         ),
       }, {
         dataIndex: 'class_4',
@@ -340,16 +388,21 @@ class NewOrderForm extends React.Component {
             </Form.Item>
           </Form>,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_4" initialValue={record.class_4}>
-              <Input
-                style={{ width: '100%' }}
-                maxLength={10}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_4')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="class_4" initialValue={record.class_4}>
+                  <Input
+                    style={{ width: '100%' }}
+                    maxLength={10}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_4')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.class_4}
+          </div>
         ),
       }, {
         dataIndex: 'class_5',
@@ -368,16 +421,21 @@ class NewOrderForm extends React.Component {
             </Form.Item>
           </Form>,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="class_5" initialValue={record.class_5}>
-              <Input
-                style={{ width: '100%' }}
-                maxLength={10}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'class_5')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="class_5" initialValue={record.class_5}>
+                  <Input
+                    style={{ width: '100%' }}
+                    maxLength={10}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'class_5')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.class_5}
+          </div>
         ),
       },
     ];
@@ -388,16 +446,21 @@ class NewOrderForm extends React.Component {
         title: <div><span style={{ color: 'red', fontSize: '20px' }}>*</span>價錢</div>,
         width: 100,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="price" initialValue={record.price}>
-              <InputNumber
-                style={{ width: '100%' }}
-                min={0}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'price')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="price" initialValue={record.price}>
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    min={0}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'price')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.price}
+          </div>
         ),
       }, {
         dataIndex: 'remark',
@@ -405,17 +468,22 @@ class NewOrderForm extends React.Component {
         title: '備註',
         width: tempV > 3 ? 300 : null,
         render: (text, record, index) => (
-          <Form className="columnLabel" colon={false} ref={this.formRef}>
-            <Form.Item name="remark" initialValue={record.remark}>
-              <TextArea
-                style={{ width: '100%' }}
-                rows={1}
-                maxLength={200}
-                // disabled={username === record.user_id}
-                onChange={(e) => this.ChangeTableCell(e, record.id, 'remark')}
-              />
-            </Form.Item>
-          </Form>
+          <div>
+            {(record.type === '2') ? (
+              <Form className="columnLabel" colon={false} ref={this.formRef}>
+                <Form.Item name="remark" initialValue={record.remark}>
+                  <TextArea
+                    style={{ width: '100%' }}
+                    rows={1}
+                    maxLength={200}
+                    // disabled={username === record.user_id}
+                    onChange={(e) => this.ChangeTableCell(e, record.id, 'remark')}
+                  />
+                </Form.Item>
+              </Form>
+            )
+              : record.remark}
+          </div>
         ),
       },
     ];
@@ -561,28 +629,74 @@ class NewOrderForm extends React.Component {
 
 
   fnAddNewOrderRow = async () => {
-    const { myOrderRow } = this.state;
-    const tempRows = myOrderRow;
+    const { orderId, myOrderRow } = this.state;
+    // const tempRows = [];
+    const tempRows = JSON.parse(JSON.stringify(myOrderRow));
     const newRow = {
       id: `+${myOrderRow.length}`,
-      heaader_id: ' ',
+      heaader_id: orderId,
       // user_id: sessionStorage.getItem('emplid'),
-      user_name: '222222',
-      item_name: ' ',
-      class_1: ' ',
-      class_2: ' ',
-      class_3: ' ',
-      class_4: ' ',
-      class_5: ' ',
-      remark: ' ',
-      price: ' ',
-      type: 0,
+      user_name: '',
+      item_name: '',
+      class_1: '',
+      class_2: '',
+      class_3: '',
+      class_4: '',
+      class_5: '',
+      remark: '',
+      price: '',
+      type: '2',
     };
-    const thisList = JSON.parse(JSON.stringify(myOrderRow));
-    thisList.splice(0, 0, newRow);
-    // tempRows.splice(0, 0, newRow);
-    
-    this.setState({ myOrderRow: thisList });
+    console.log(newRow);
+    tempRows.unshift(newRow);
+
+    // tempRows.push(newRow);
+    // for (let i = 0; i < myOrderRow.length; i += 1) {
+    //   tempRows.push(myOrderRow[i]);
+    // }
+    console.log(tempRows);
+    this.setState({ myOrderRow: tempRows });
+  }
+
+  fnEditNewOrderRow = async (id, type) => {
+    const { myOrderRow } = this.state;
+    const thisArray = myOrderRow;
+    const index = myOrderRow.findIndex((p) => p.id === id);
+    console.log(`id=${id},index=${index},type=${type}`);
+    // thisArray[index].user_name = type;
+    thisArray[index].type = type;
+    this.setState({ myOrderRow: thisArray });
+    console.log(myOrderRow);
+  }
+
+  fndelNewOrderRow = async () => {
+    // const { orderId, myOrderRow } = this.state;
+    // const tempRows = [];
+    // // const tempRows = JSON.parse(JSON.stringify(myOrderRow));
+    // const newRow = {
+    //   id: `+${myOrderRow.length}`,
+    //   heaader_id: orderId,
+    //   // user_id: sessionStorage.getItem('emplid'),
+    //   user_name: '222222',
+    //   item_name: ' ',
+    //   class_1: ' ',
+    //   class_2: ' ',
+    //   class_3: ' ',
+    //   class_4: ' ',
+    //   class_5: ' ',
+    //   remark: ' ',
+    //   price: ' ',
+    //   type: 0,
+    // };
+    // // console.log(newRow);
+    // // tempRows.unshift(newRow);
+
+    // tempRows.push(newRow);
+    // for (let i = 0; i < myOrderRow.length; i += 1) {
+    //   tempRows.push(myOrderRow[i]);
+    // }
+    // console.log(tempRows);
+    // this.setState({ myOrderRow: tempRows });
   }
 
   handlePage = (path) => {
@@ -766,8 +880,8 @@ class NewOrderForm extends React.Component {
               bordered
               size="small"
               pagination={{
-                total: NewOrderdata.length,
-                pageSize: NewOrderdata.length,
+                total: myOrderRow.length,
+                pageSize: myOrderRow.length,
                 hideOnSinglePage: true,
               }}
               scroll={{ x: 'max-content' }}
