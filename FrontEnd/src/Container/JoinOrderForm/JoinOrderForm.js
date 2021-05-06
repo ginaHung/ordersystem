@@ -20,7 +20,7 @@ import {
   LoginRouter, HeaderPageRouter, newOrderViewType,
   defaultColumn, NewOrderdata, dataSource,
 } from '../../utils/define';
-import './NewOrderForm.less';
+import './JoinOrderForm.less';
 import BTN_PHOTO_DELETE_NORMAL from '../../../img/btn_photo_delete_normal.svg';
 import BTN_PHOTO_VIEW_NORMAL from '../../../img/btn_photo_view_normal.svg';
 import imgAddOrder from '../../../img/add-btn.png';
@@ -30,7 +30,7 @@ import imgOkOrder from '../../../img/ok-btn.png';
 
 const { TextArea } = Input;
 
-class NewOrderForm extends React.Component {
+class JoinOrderForm extends React.Component {
   initState = {
     // username: sessionStorage.getItem('emplid'),
     userid: sessionStorage.getItem('emplid'),
@@ -721,7 +721,7 @@ class NewOrderForm extends React.Component {
               onChange={(e) => this.changeOrderHeader(e, 'orderName')}
             />
             <span style={{ fontSize: '20px', fontWeight: 'bold' }}> ({myOrderHeader.orderNum})</span>
-            {/* <span style={{ fontSize: '20px', fontWeight: 'bold' }}>({orderId})</span> */}
+            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>({orderId})</span>
             <Popconfirm
               title="訂單完成後將會刪除紀錄，確定要完成嗎?"
               icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
@@ -905,14 +905,14 @@ class NewOrderForm extends React.Component {
   }
 }
 
-NewOrderForm.propTypes = {
+JoinOrderForm.propTypes = {
   history: PropTypes.func,
   match: PropTypes.object,
 };
 
-NewOrderForm.defaultProps = {
+JoinOrderForm.defaultProps = {
   history: null,
   match: {},
 };
 
-export default NewOrderForm;
+export default JoinOrderForm;

@@ -8,21 +8,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 // import { Route } from 'react-router-dom';
-import { Tooltip, Table, Button, Divider, Input, message } from 'antd';
+import { Tooltip, Table, Button, Divider, Input, message, Modal, Form } from 'antd';
 import { FileAddOutlined } from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
 import './OrderListPage.less';
 import {
-  LoginRouter, HeaderPageRouter, modeViewType, newOrderViewType,
+  LoginRouter, HeaderPageRouter, modeViewType,
   defaultColumn, dataSource,
 } from '../../utils/define';
-import imgAddOrder from '../../../img/add-btn.png';
 import NewOrderForm from '../NewOrderForm/NewOrderForm';
+import JoinOrderForm from '../JoinOrderForm/JoinOrderForm';
+// import imgAddOrder from '../../../img/add-btn.png';
 
 const { Search } = Input;
 
 class OrderListPage extends React.Component {
+
+  formRef = React.createRef();
 
   initState = {
     userid: sessionStorage.getItem('emplid'),
@@ -34,9 +37,13 @@ class OrderListPage extends React.Component {
 
     myOrderListColumn: [], // 我建立的訂單 table header
     allOrderListColumn: [], // 所有訂單 table header
-
-    newOrderView: newOrderViewType.new,
     myOrderId: '',
+
+    tempOrderItem: null,
+    visibleModel: {
+      codeModel: false,
+      codeModelErrorStr: false,
+    },
   }
 
   constructor(props) {
@@ -48,7 +55,8 @@ class OrderListPage extends React.Component {
 
   // #region mount ------------------------------------
 
-  // componentWillMount = () => { }
+  // componentWillMount = () => {
+  // }
 
   componentDidMount = async () => {
     const { userid, ViewType } = this.state;
@@ -136,7 +144,7 @@ class OrderListPage extends React.Component {
           <Button
             size="middle"
             disabled={new Date(`${record.endtime}:59`) < new Date()}
-            onClick={() => this.btnJoinOrder()}
+            onClick={() => this.btnJoin(record)}
           >
             +1
           </Button>
@@ -181,7 +189,7 @@ class OrderListPage extends React.Component {
 
     this.setState({
       myOrderId: '',
-      newOrderView: newOrderViewType.new,
+      // newOrderView: newOrderViewType.new,
     });
     history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
   }
@@ -189,7 +197,7 @@ class OrderListPage extends React.Component {
   btnEditOrderList = async (id) => {
     this.setState({
       myOrderId: id,
-      newOrderView: newOrderViewType.edit,
+      // newOrderView: newOrderViewType.edit,
     });
     this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}/${id}`);
   }
@@ -222,8 +230,47 @@ class OrderListPage extends React.Component {
     });
   }
 
-  btnJoinOrder = () => {
+  btnJoin = async (record) => {
+    this.setState({
+      myOrderId: record.id,
+      tempOrderItem: record,
+    });
+    await this.fnSetModelVisible(true, 'codeModel');
+  }
 
+  btnCheckInviteCode = async () => {
+    const { myOrderId, tempOrderItem } = this.state;
+
+    this.formRef.current.validateFields()
+      .then(async (values) => {
+        if (tempOrderItem.invite_code === undefined || values.code === tempOrderItem.invite_code) {
+          this.formRef.current.resetFields();
+          await this.fnSetModelVisible(false);
+          this.handlePage(`${HeaderPageRouter}/${modeViewType.joinView}/${myOrderId}`);
+        } else {
+          await this.fnSetModelVisible(true, 'codeModelErrorStr');
+        }
+      })
+      .catch((err) => {
+        message.error(`btnCheckInviteCode: ${err}`);
+      });
+  }
+
+  fnSetModelVisible = async (visible, model) => {
+    const { visibleModel } = this.state;
+    let tempModel = visibleModel;
+
+    if (model === undefined) {
+      tempModel = {
+        menuModel: false,
+      };
+    } else {
+      tempModel[model] = visible;
+    }
+
+    this.setState({
+      visibleModel: tempModel,
+    });
   }
 
   // #endregion btn ----------------------------------
@@ -246,13 +293,14 @@ class OrderListPage extends React.Component {
       ViewType,
       myOrderListColumn, allOrderListColumn,
       myOrderListArray, allOrderListArray, allOrderListArrayShow,
-      myOrderId, newOrderView,
+      myOrderId,
+      visibleModel,
     } = this.state;
     return (
       <div>
         { ViewType === modeViewType.orderlistView ? (
           <div>
-            <div className="panel-style" style={{ height: 290 }}>
+            <div className="panel-style" style={{ height: 300 }}>
               <div style={{ marginTop: 5, width: '100%' }}>
                 <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
                   我建立的訂單
@@ -312,18 +360,47 @@ class OrderListPage extends React.Component {
         )
           : <div />
         }
-
-        {
-          ViewType === modeViewType.neworderView ? (
-            <NewOrderForm
-              orderid={myOrderId}
-              viewType={newOrderView}
-              fnReload={this.fnReload}
-            />
-          )
-            : <div />
+        { ViewType === modeViewType.neworderView ? (
+          <NewOrderForm
+            orderid={myOrderId}
+            // viewType={newOrderView}
+            fnReload={this.fnReload}
+          />
+        )
+          : <div />
         }
-      </div >
+
+        { ViewType === modeViewType.joinView ? (
+          <JoinOrderForm
+            orderid={myOrderId}
+            fnReload={this.fnReload}
+          />
+        )
+          : <div />
+        }
+
+        <Modal
+          visible={visibleModel.codeModel}
+          title="請輸入邀請碼"
+          destroyOnClose
+          footer={[
+            <Button onClick={() => this.btnCheckInviteCode()}>確認</Button>,
+            <Button onClick={() => this.fnSetModelVisible(false)}>取消</Button>,
+          ]}
+        >
+          <Form ref={this.formRef}>
+            <Form.Item name="code">
+              <Input
+                allowClear
+                placeholder="輸入邀請碼"
+              />
+            </Form.Item>
+          </Form>
+          <div style={{ width: '100%', height: 10, textAlign: 'center', color: 'red', fontWeight: 'bold' }}>
+            {visibleModel.codeModelErrorStr ? ('邀請碼錯誤') : (<div />)}
+          </div>
+        </Modal>
+      </div>
     );
   }
 }
