@@ -608,9 +608,6 @@ class NewOrderForm extends React.Component {
     // console.log(thisArray);
   };
 
-  // #endregion txt change
-
-
   fnAddNewOrderRow = async () => {
     const { orderId, myOrderRow } = this.state;
     const tempRows = JSON.parse(JSON.stringify(myOrderRow));
@@ -682,6 +679,8 @@ class NewOrderForm extends React.Component {
       mydelOrderRow: tempdelArray,
     });
   }
+
+  // #endregion txt change
 
   handlePage = (path) => {
     const { history } = this.props;

@@ -10,6 +10,7 @@
 //   '/api/introduction/getIntroductionFile'];
 
 import React from 'react';
+import moment from 'moment';
 
 const SYSTEM_TITLE = '下午茶點餐系統';
 const LoginRouter = '/login';
@@ -34,24 +35,40 @@ const defaultColumn = [
     dataIndex: 'id_num',
     align: 'center',
     width: 130,
+    sorter: {
+      compare: (a, b) => a.id_num.localeCompare(b.id_num),
+      multiple: 1,
+    },
   },
   {
     title: '名稱',
     dataIndex: 'name',
     align: 'center',
     width: 200,
+    sorter: {
+      compare: (a, b) => a.id_num.localeCompare(b.id_num),
+      multiple: 2,
+    },
   },
   {
     title: '建立者',
     dataIndex: 'user_name',
     align: 'center',
     width: 130,
+    sorter: {
+      compare: (a, b) => a.id_num.localeCompare(b.id_num),
+      multiple: 3,
+    },
   },
   {
     title: '結案時間',
     dataIndex: 'endtime',
     align: 'center',
     width: 150,
+    sorter: {
+      compare: (a, b) => moment(a.endtime).unix() - moment(b.endtime).unix(),
+      multiple: 4,
+    },
   },
   {
     title: '描述',

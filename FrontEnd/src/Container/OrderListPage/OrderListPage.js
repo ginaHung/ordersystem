@@ -30,6 +30,7 @@ class OrderListPage extends React.Component {
     ViewType: modeViewType.orderlistView,
     myOrderListArray: [],
     allOrderListArray: [],
+    allOrderListArrayShow: [],
 
     myOrderListColumn: [], // 我建立的訂單 table header
     allOrderListColumn: [], // 所有訂單 table header
@@ -166,6 +167,7 @@ class OrderListPage extends React.Component {
   fnGetallList = async () => {
     this.setState({
       allOrderListArray: dataSource,
+      allOrderListArrayShow: dataSource,
     });
   }
 
@@ -192,12 +194,32 @@ class OrderListPage extends React.Component {
     this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}/${id}`);
   }
 
-  btnDeleteOrderList = () => {
+  btnOnSearch = async (value) => {
+    // console.log(value);
+    const { allOrderListArray } = this.state;
+    let tempArray = [];
+    const compareAtt = ['id_num', 'name', 'user_id', 'user_name', 'endtime'];
+    if (await this.IsNullOrEmpty(value)) {
+      tempArray = allOrderListArray;
+    } else {
+      for (let i = 0; i < allOrderListArray.length; i += 1) {
+        // console.log(Object.values(allOrderListArray[i]).join(''));
+        let str = '';
+        for (let j = 0; j < compareAtt.length; j += 1) {
+          if (allOrderListArray[i][compareAtt[j]] !== null) {
+            str = `${str}${allOrderListArray[i][compareAtt[j]]}`;
+          }
+        }
 
-  }
+        if (str.toUpperCase().includes(value)) {
+          tempArray.push(allOrderListArray[i]);
+        }
+      }
+    }
 
-  btnOnSearch = (value) => {
-    console.log(value);
+    this.setState({
+      allOrderListArrayShow: tempArray,
+    });
   }
 
   btnJoinOrder = () => {
@@ -223,7 +245,7 @@ class OrderListPage extends React.Component {
     const {
       ViewType,
       myOrderListColumn, allOrderListColumn,
-      myOrderListArray, allOrderListArray,
+      myOrderListArray, allOrderListArray, allOrderListArrayShow,
       myOrderId, newOrderView,
     } = this.state;
     return (
@@ -245,12 +267,6 @@ class OrderListPage extends React.Component {
                     onClick={() => this.btnAddOrderList()}
                   />
                 </Tooltip>
-                {/* <Tooltip placement="topLeft" title="建立訂單">
-                  <a onClick={() => this.btnAddOrderList()}>
-                    <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
-                  </a>
-                </Tooltip> */}
-
               </div>
               <div style={{ marginTop: 5, width: '100%', height: 180 }}>
                 <Table
@@ -273,7 +289,7 @@ class OrderListPage extends React.Component {
                   所有訂單
                 </span>
                 <Search
-                  style={{ width: 200, marginLeft: 10 }}
+                  style={{ width: 250, marginLeft: 10 }}
                   allowClear="true"
                   placeholder="input search text"
                   onSearch={this.btnOnSearch}
@@ -282,7 +298,7 @@ class OrderListPage extends React.Component {
               <div style={{ marginTop: 5, width: '100%' }}>
                 <Table
                   columns={allOrderListColumn}
-                  dataSource={allOrderListArray}
+                  dataSource={allOrderListArrayShow}
                   bordered
                   size="small"
                   pagination={{
