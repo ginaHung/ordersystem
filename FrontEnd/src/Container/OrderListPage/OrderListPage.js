@@ -25,7 +25,8 @@ const { Search } = Input;
 class OrderListPage extends React.Component {
 
   initState = {
-    username: sessionStorage.getItem('emplid'),
+    userid: sessionStorage.getItem('emplid'),
+    username: sessionStorage.getItem('emplidname'),
     ViewType: modeViewType.orderlistView,
     myOrderListArray: [],
     allOrderListArray: [],
@@ -49,11 +50,11 @@ class OrderListPage extends React.Component {
   // componentWillMount = () => { }
 
   componentDidMount = async () => {
-    const { username, ViewType } = this.state;
+    const { userid, ViewType } = this.state;
     const { view, id } = this.props.match.params;
     // console.log(`'2' ${ViewType}`);
 
-    if (await this.IsNullOrEmpty(username)) {
+    if (await this.IsNullOrEmpty(userid)) {
       const { history } = this.props;
       history.push(LoginRouter);
     } else {

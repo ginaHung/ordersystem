@@ -9,10 +9,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import {
-  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber, Popconfirm,
+  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber, Popconfirm, Modal,
 } from 'antd';
 import {
-  PlusOutlined, LoadingOutlined, DoubleRightOutlined, DoubleLeftOutlined, QuestionCircleOutlined, PlusCircleOutlined,
+  PlusOutlined, LoadingOutlined, DoubleRightOutlined, DoubleLeftOutlined, QuestionCircleOutlined,
 } from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
@@ -32,7 +32,9 @@ const { TextArea } = Input;
 
 class NewOrderForm extends React.Component {
   initState = {
-    username: sessionStorage.getItem('emplid'),
+    // username: sessionStorage.getItem('emplid'),
+    userid: sessionStorage.getItem('emplid'),
+    username: sessionStorage.getItem('emplidname'),
     orderId: this.props.orderid,
     orderviewType: this.props.viewType,
 
@@ -40,7 +42,7 @@ class NewOrderForm extends React.Component {
       orderNum: '',
       orderName: '',
       orderuserId: sessionStorage.getItem('emplid'),
-      orderuserName: '',
+      orderuserName: sessionStorage.getItem('emplidname'),
       orderDiscribe: '',
       orderEndDate: '',
       orderEndTime: '',
@@ -71,6 +73,9 @@ class NewOrderForm extends React.Component {
 
     visibleClass: 2,
     loading: false,
+    visibleModel: {
+      menuModel: false,
+    },
 
   }
 
@@ -88,11 +93,11 @@ class NewOrderForm extends React.Component {
   }
 
   componentDidMount = async () => {
-    const { username, orderviewType, orderId, myOrderHeader, myOrderRow } = this.state;
+    const { userid, orderviewType, orderId, myOrderHeader, myOrderRow } = this.state;
     const dataHeaderResult = myOrderHeader;
     let datarowResult = myOrderRow;
 
-    if (await this.IsNullOrEmpty(username)) {
+    if (await this.IsNullOrEmpty(userid)) {
       const { history } = this.props;
       history.push(LoginRouter);
     } else {
@@ -122,7 +127,7 @@ class NewOrderForm extends React.Component {
           dataHeaderResult.orderCode = tempheader.invite_code;
           dataHeaderResult.orderMenu = tempheader.menu;
           dataHeaderResult.OrderClass = [tempheader.class_1, tempheader.class_2, tempheader.class_3, tempheader.class_4, tempheader.class_5];
-          const tempvisibleClassNum = dataHeaderResult.OrderClass.indexOf('') > 0 ? dataHeaderResult.OrderClass.indexOf('') : 5;
+          const tempvisibleClassNum = dataHeaderResult.OrderClass.lastIndexOf('') > 0 ? dataHeaderResult.OrderClass.lastIndexOf('') : 5;
 
           this.setState({
             myOrderHeader: dataHeaderResult,
@@ -234,7 +239,6 @@ class NewOrderForm extends React.Component {
                 style={{ width: '100%', textAlign: 'center' }}
                 value={record.user_name}
                 maxLength={10}
-                // disabled={username === record.user_id}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'user_name')}
               />
             )
@@ -276,7 +280,6 @@ class NewOrderForm extends React.Component {
                 style={{ width: '100%' }}
                 value={record.item_name}
                 maxLength={30}
-                // disabled={username === record.user_id}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'item_name')}
               />
             )
@@ -306,7 +309,6 @@ class NewOrderForm extends React.Component {
                 style={{ width: '100%' }}
                 value={record.class_1}
                 maxLength={10}
-                // disabled={username === record.user_id}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_1')}
               />
             )
@@ -333,7 +335,6 @@ class NewOrderForm extends React.Component {
                 style={{ width: '100%' }}
                 value={record.class_2}
                 maxLength={10}
-                // disabled={username === record.user_id}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_2')}
               />
             )
@@ -359,7 +360,6 @@ class NewOrderForm extends React.Component {
                 style={{ width: '100%' }}
                 value={record.class_3}
                 maxLength={10}
-                // disabled={username === record.user_id}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_3')}
               />
             )
@@ -385,7 +385,6 @@ class NewOrderForm extends React.Component {
                 style={{ width: '100%' }}
                 value={record.class_4}
                 maxLength={10}
-                // disabled={username === record.user_id}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_4')}
               />
             )
@@ -411,7 +410,6 @@ class NewOrderForm extends React.Component {
                 style={{ width: '100%' }}
                 value={record.class_5}
                 maxLength={10}
-                // disabled={username === record.user_id}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_5')}
               />
             )
@@ -570,13 +568,22 @@ class NewOrderForm extends React.Component {
     // console.log(myOrderHeader);
   }
 
-  previewImgurl = () => {
-    const { myOrderHeader } = this.state;
-    if (myOrderHeader.orderMenu) {
-      this.setState({
-        // previewVisible: true,
-      });
+  fnSetModelVisible = (visible, model) => {
+    const { visibleModel } = this.state;
+    let tempModel = visibleModel;
+
+    if (model === undefined) {
+      tempModel = {
+        menuModel: false,
+      };
+    } else {
+      tempModel[model] = visible;
     }
+
+    this.setState({
+      visibleModel: tempModel,
+    });
+
   }
 
   ChangeTableColumnName = (e, column) => {
@@ -696,8 +703,9 @@ class NewOrderForm extends React.Component {
 
   render() {
     const {
-      orderviewType, loading,
+      orderviewType,
       orderId, myOrderColumn, myOrderHeader, myOrderRow,
+      loading, visibleModel,
     } = this.state;
     return (
       <div>
@@ -725,7 +733,17 @@ class NewOrderForm extends React.Component {
             >
               <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>完成訂單</Button>
             </Popconfirm>
-            <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.fnReload()}>取消</Button>
+
+            <Popconfirm
+              title="可能有未儲存的內容，確定要離開嗎?"
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              onConfirm={() => this.fnReload()}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>取消</Button>
+            </Popconfirm>
+
             <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.fnReload()}>儲存</Button>
           </div>
 
@@ -754,7 +772,7 @@ class NewOrderForm extends React.Component {
                       marginLeft: 10,
                       cursor: myOrderHeader.orderMenu ? 'pointer' : 'not-allowed',
                     }}
-                    onClick={() => this.previewImgurl()}
+                    onClick={myOrderHeader.orderMenu ? () => this.fnSetModelVisible(true, 'menuModel') : null}
                   />
                 </td>
               </tr>
@@ -870,6 +888,20 @@ class NewOrderForm extends React.Component {
           </div>
         </div>
         <div style={{ height: '25px' }} />
+
+        <Modal
+          visible={visibleModel.menuModel}
+          title="Menu"
+          width="70%"
+          onCancel={() => this.fnSetModelVisible(false, 'menuModel')}
+          footer={(
+            <Button onClick={() => this.fnSetModelVisible(false, 'menuModel')}>
+              OK
+            </Button>
+          )}
+        >
+          <img alt="example" style={{ width: '100%' }} src={myOrderHeader.orderMenu} />
+        </Modal>
       </div>
     );
   }

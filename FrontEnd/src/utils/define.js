@@ -152,8 +152,8 @@ const dataSource = [
     invite_code: '12345',
     class_1: 'c1-1',
     class_2: 'c2-1',
-    class_3: 'c3-1',
-    class_4: '',
+    class_3: '',
+    class_4: 'c4-1',
     class_5: '',
     orderManu: '',
   }, {

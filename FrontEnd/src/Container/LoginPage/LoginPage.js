@@ -91,6 +91,7 @@ class LoginPage extends React.Component {
       if (true) {
         sessionStorage.setItem('login', true);
         sessionStorage.setItem('emplid', username);
+        sessionStorage.setItem('emplidname', 'Gina');
         history.push(HeaderPageRouter);
       } else {
         // message.error(member.data.errorCode);

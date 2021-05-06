@@ -19,7 +19,8 @@ class HeaderPage extends React.Component {
 
   initState = {
     loginsuccess: sessionStorage.getItem('login'),
-    username: sessionStorage.getItem('emplid'),
+    userid: sessionStorage.getItem('emplid'),
+    username: sessionStorage.getItem('emplidname'),
   }
 
   constructor(props) {
@@ -39,9 +40,9 @@ class HeaderPage extends React.Component {
   componentWillMount = () => { }
 
   componentDidMount = async () => {
-    const { loginsuccess, username } = this.state;
+    const { loginsuccess, userid } = this.state;
     const { history } = this.props;
-    if (loginsuccess !== 'true' || await this.IsNullOrEmpty(username)) {
+    if (loginsuccess !== 'true' || await this.IsNullOrEmpty(userid)) {
       history.push(LoginRouter);
     }
   }
@@ -61,7 +62,7 @@ class HeaderPage extends React.Component {
   }
 
   render() {
-    const { username } = this.state;
+    const { userid, username } = this.state;
     return (
       <div style={{ height: '100%' }}>
         <Layout style={{ height: '100%' }}>
