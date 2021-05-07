@@ -7,19 +7,16 @@
 /* eslint-disable react/jsx-one-expression-per-line */
 import React from 'react';
 import PropTypes from 'prop-types';
-// import { Route } from 'react-router-dom';
 import { Tooltip, Table, Button, Divider, Input, message, Modal, Form } from 'antd';
 import { FileAddOutlined } from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
-import './OrderListPage.less';
 import {
   LoginRouter, HeaderPageRouter, modeViewType,
   defaultColumn, dataSource,
 } from '../../utils/define';
+import './OrderListPage.less';
 import NewOrderForm from '../NewOrderForm/NewOrderForm';
-import JoinOrderForm from '../JoinOrderForm/JoinOrderForm';
-// import imgAddOrder from '../../../img/add-btn.png';
 
 const { Search } = Input;
 
@@ -101,10 +98,7 @@ class OrderListPage extends React.Component {
 
   // componentWillUpdate = () => { }
 
-  componentDidUpdate = async () => {
-    // const { ViewType } = this.state;
-    // console.log(`u ViewType=${ViewType}`);
-  }
+  // componentDidUpdate = async () => { }
 
   // #endregion mount ---------------------------------
 
@@ -189,7 +183,6 @@ class OrderListPage extends React.Component {
 
     this.setState({
       myOrderId: '',
-      // newOrderView: newOrderViewType.new,
     });
     history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
   }
@@ -197,7 +190,6 @@ class OrderListPage extends React.Component {
   btnEditOrderList = async (id) => {
     this.setState({
       myOrderId: id,
-      // newOrderView: newOrderViewType.edit,
     });
     this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}/${id}`);
   }
@@ -243,7 +235,8 @@ class OrderListPage extends React.Component {
 
     this.formRef.current.validateFields()
       .then(async (values) => {
-        if (tempOrderItem.invite_code === undefined || values.code === tempOrderItem.invite_code) {
+        if (values.code !== undefined
+          && (tempOrderItem.invite_code === undefined || values.code.trim() === tempOrderItem.invite_code)) {
           this.formRef.current.resetFields();
           await this.fnSetModelVisible(false);
           this.handlePage(`${HeaderPageRouter}/${modeViewType.joinView}/${myOrderId}`);
@@ -271,6 +264,13 @@ class OrderListPage extends React.Component {
     this.setState({
       visibleModel: tempModel,
     });
+  }
+
+  handleCodeModalKeyDown = async (e) => {
+    // console.log(`e.key=${e.key}`);
+    if (e.key === 'Enter') {
+      await this.btnCheckInviteCode();
+    }
   }
 
   // #endregion btn ----------------------------------
@@ -357,27 +357,23 @@ class OrderListPage extends React.Component {
               </div>
             </div>
           </div>
-        )
-          : <div />
-        }
+        ) : <div />}
+
         { ViewType === modeViewType.neworderView ? (
           <NewOrderForm
+            view={modeViewType.neworderView}
             orderid={myOrderId}
-            // viewType={newOrderView}
             fnReload={this.fnReload}
           />
-        )
-          : <div />
-        }
+        ) : <div />}
 
         { ViewType === modeViewType.joinView ? (
-          <JoinOrderForm
+          <NewOrderForm
+            view={modeViewType.joinView}
             orderid={myOrderId}
             fnReload={this.fnReload}
           />
-        )
-          : <div />
-        }
+        ) : <div />}
 
         <Modal
           visible={visibleModel.codeModel}
@@ -391,13 +387,15 @@ class OrderListPage extends React.Component {
           <Form ref={this.formRef}>
             <Form.Item name="code">
               <Input
+                autoFocus
                 allowClear
                 placeholder="輸入邀請碼"
+                onKeyDown={this.handleCodeModalKeyDown}
               />
             </Form.Item>
           </Form>
           <div style={{ width: '100%', height: 10, textAlign: 'center', color: 'red', fontWeight: 'bold' }}>
-            {visibleModel.codeModelErrorStr ? ('邀請碼錯誤') : (<div />)}
+            {visibleModel.codeModelErrorStr ? ('錯誤   不要偷看') : (<div />)}
           </div>
         </Modal>
       </div>
