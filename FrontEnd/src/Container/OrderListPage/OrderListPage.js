@@ -7,33 +7,40 @@
 /* eslint-disable react/jsx-one-expression-per-line */
 import React from 'react';
 import PropTypes from 'prop-types';
-// import { Route } from 'react-router-dom';
-import { Tooltip, Table, Button, Divider, Input, message } from 'antd';
+import { Tooltip, Table, Button, Divider, Input, message, Modal, Form } from 'antd';
+import { FileAddOutlined } from '@ant-design/icons';
 
 // import { verify } from '../../service/API';
-import './OrderListPage.less';
 import {
-  LoginRouter, HeaderPageRouter, modeViewType, newOrderViewType,
+  LoginRouter, HeaderPageRouter, modeViewType,
   defaultColumn, dataSource,
 } from '../../utils/define';
-import imgAddOrder from '../../../img/add-button.png';
+import './OrderListPage.less';
 import NewOrderForm from '../NewOrderForm/NewOrderForm';
 
 const { Search } = Input;
 
 class OrderListPage extends React.Component {
 
+  formRef = React.createRef();
+
   initState = {
-    username: sessionStorage.getItem('emplid'),
+    userid: sessionStorage.getItem('emplid'),
+    username: sessionStorage.getItem('emplidname'),
     ViewType: modeViewType.orderlistView,
     myOrderListArray: [],
     allOrderListArray: [],
+    allOrderListArrayShow: [],
 
     myOrderListColumn: [], // 我建立的訂單 table header
     allOrderListColumn: [], // 所有訂單 table header
-
-    newOrderView: newOrderViewType.new,
     myOrderId: '',
+
+    tempOrderItem: null,
+    visibleModel: {
+      codeModel: false,
+      codeModelErrorStr: false,
+    },
   }
 
   constructor(props) {
@@ -45,14 +52,15 @@ class OrderListPage extends React.Component {
 
   // #region mount ------------------------------------
 
-  // componentWillMount = () => { }
+  // componentWillMount = () => {
+  // }
 
   componentDidMount = async () => {
-    const { username, ViewType } = this.state;
+    const { userid, ViewType } = this.state;
     const { view, id } = this.props.match.params;
     // console.log(`'2' ${ViewType}`);
 
-    if (await this.IsNullOrEmpty(username)) {
+    if (await this.IsNullOrEmpty(userid)) {
       const { history } = this.props;
       history.push(LoginRouter);
     } else {
@@ -90,10 +98,7 @@ class OrderListPage extends React.Component {
 
   // componentWillUpdate = () => { }
 
-  componentDidUpdate = async () => {
-    // const { ViewType } = this.state;
-    // console.log(`u ViewType=${ViewType}`);
-  }
+  // componentDidUpdate = async () => { }
 
   // #endregion mount ---------------------------------
 
@@ -111,16 +116,13 @@ class OrderListPage extends React.Component {
 
     tempMyArr.push({
       title: '操作',
-      width: 150,
+      width: 130,
       fixed: 'right',
       align: 'center',
       render: (text, record) => (
         <div>
           <Button size="middle" onClick={() => this.btnEditOrderList(record.id)}>
-            編輯
-          </Button>
-          <Button size="middle" style={{ marginLeft: 5 }} onClick={() => this.btnDeleteOrderList()}>
-            完成
+            編輯 - 完成
           </Button>
         </div>
       ),
@@ -128,7 +130,7 @@ class OrderListPage extends React.Component {
 
     tempAllArr.push({
       title: '操作',
-      width: 150,
+      width: 130,
       fixed: 'right',
       align: 'center',
       render: (text, record) => (
@@ -136,7 +138,7 @@ class OrderListPage extends React.Component {
           <Button
             size="middle"
             disabled={new Date(`${record.endtime}:59`) < new Date()}
-            onClick={() => this.btnJoinOrder()}
+            onClick={() => this.btnJoin(record)}
           >
             +1
           </Button>
@@ -167,6 +169,7 @@ class OrderListPage extends React.Component {
   fnGetallList = async () => {
     this.setState({
       allOrderListArray: dataSource,
+      allOrderListArrayShow: dataSource,
     });
   }
 
@@ -180,7 +183,6 @@ class OrderListPage extends React.Component {
 
     this.setState({
       myOrderId: '',
-      newOrderView: newOrderViewType.new,
     });
     history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
   }
@@ -188,21 +190,87 @@ class OrderListPage extends React.Component {
   btnEditOrderList = async (id) => {
     this.setState({
       myOrderId: id,
-      newOrderView: newOrderViewType.edit,
     });
     this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}/${id}`);
   }
 
-  btnDeleteOrderList = () => {
+  btnOnSearch = async (value) => {
+    // console.log(value);
+    const { allOrderListArray } = this.state;
+    let tempArray = [];
+    const compareAtt = ['id_num', 'name', 'user_id', 'user_name', 'endtime'];
+    if (await this.IsNullOrEmpty(value)) {
+      tempArray = allOrderListArray;
+    } else {
+      for (let i = 0; i < allOrderListArray.length; i += 1) {
+        // console.log(Object.values(allOrderListArray[i]).join(''));
+        let str = '';
+        for (let j = 0; j < compareAtt.length; j += 1) {
+          if (allOrderListArray[i][compareAtt[j]] !== null) {
+            str = `${str}${allOrderListArray[i][compareAtt[j]]}`;
+          }
+        }
 
+        if (str.toUpperCase().includes(value)) {
+          tempArray.push(allOrderListArray[i]);
+        }
+      }
+    }
+
+    this.setState({
+      allOrderListArrayShow: tempArray,
+    });
   }
 
-  btnOnSearch = (value) => {
-    console.log(value);
+  btnJoin = async (record) => {
+    this.setState({
+      myOrderId: record.id,
+      tempOrderItem: record,
+    });
+    await this.fnSetModelVisible(true, 'codeModel');
   }
 
-  btnJoinOrder = () => {
+  btnCheckInviteCode = async () => {
+    const { myOrderId, tempOrderItem } = this.state;
 
+    this.formRef.current.validateFields()
+      .then(async (values) => {
+        if (values.code !== undefined
+          && (tempOrderItem.invite_code === undefined || values.code.trim() === tempOrderItem.invite_code)) {
+          this.formRef.current.resetFields();
+          await this.fnSetModelVisible(false);
+          this.handlePage(`${HeaderPageRouter}/${modeViewType.joinView}/${myOrderId}`);
+        } else {
+          await this.fnSetModelVisible(true, 'codeModelErrorStr');
+        }
+      })
+      .catch((err) => {
+        message.error(`btnCheckInviteCode: ${err}`);
+      });
+  }
+
+  fnSetModelVisible = async (visible, model) => {
+    const { visibleModel } = this.state;
+    let tempModel = visibleModel;
+
+    if (model === undefined) {
+      tempModel = {
+        menuModel: false,
+      };
+    } else {
+      tempModel[model] = visible;
+    }
+
+    this.setState({
+      visibleModel: tempModel,
+    });
+  }
+
+  handleCodeModalKeyDown = async (e) => {
+    // console.log(`e.key=${e.key}`);
+    if (e.key === 'Enter') {
+      await this.btnCheckInviteCode();
+    }
   }
 
   // #endregion btn ----------------------------------
@@ -220,28 +288,32 @@ class OrderListPage extends React.Component {
     return false;
   }
 
-
-
   render() {
     const {
       ViewType,
       myOrderListColumn, allOrderListColumn,
-      myOrderListArray, allOrderListArray,
-      myOrderId, newOrderView,
+      myOrderListArray, allOrderListArray, allOrderListArrayShow,
+      myOrderId,
+      visibleModel,
     } = this.state;
     return (
       <div>
         { ViewType === modeViewType.orderlistView ? (
           <div>
-            <div className="panel-style" style={{ height: 290 }}>
+            <div className="panel-style" style={{ height: 300 }}>
               <div style={{ marginTop: 5, width: '100%' }}>
                 <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
                   我建立的訂單
                 </span>
                 <Tooltip placement="topLeft" title="建立訂單">
-                  <a onClick={() => this.btnAddOrderList()}>
-                    <img alt="icon" src={imgAddOrder} style={{ width: 25, marginLeft: 10 }} />
-                  </a>
+                  <Button
+                    shape="circle"
+                    type="danger"
+                    icon={<FileAddOutlined />}
+                    size="large"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => this.btnAddOrderList()}
+                  />
                 </Tooltip>
               </div>
               <div style={{ marginTop: 5, width: '100%', height: 180 }}>
@@ -265,7 +337,7 @@ class OrderListPage extends React.Component {
                   所有訂單
                 </span>
                 <Search
-                  style={{ width: 200, marginLeft: 10 }}
+                  style={{ width: 250, marginLeft: 10 }}
                   allowClear="true"
                   placeholder="input search text"
                   onSearch={this.btnOnSearch}
@@ -274,7 +346,7 @@ class OrderListPage extends React.Component {
               <div style={{ marginTop: 5, width: '100%' }}>
                 <Table
                   columns={allOrderListColumn}
-                  dataSource={allOrderListArray}
+                  dataSource={allOrderListArrayShow}
                   bordered
                   size="small"
                   pagination={{
@@ -285,17 +357,47 @@ class OrderListPage extends React.Component {
               </div>
             </div>
           </div>
-        )
-          : <div />}
+        ) : <div />}
 
         { ViewType === modeViewType.neworderView ? (
           <NewOrderForm
+            view={modeViewType.neworderView}
             orderid={myOrderId}
-            viewType={newOrderView}
             fnReload={this.fnReload}
           />
-        )
-          : <div />}
+        ) : <div />}
+
+        { ViewType === modeViewType.joinView ? (
+          <NewOrderForm
+            view={modeViewType.joinView}
+            orderid={myOrderId}
+            fnReload={this.fnReload}
+          />
+        ) : <div />}
+
+        <Modal
+          visible={visibleModel.codeModel}
+          title="請輸入邀請碼"
+          destroyOnClose
+          footer={[
+            <Button onClick={() => this.btnCheckInviteCode()}>確認</Button>,
+            <Button onClick={() => this.fnSetModelVisible(false)}>取消</Button>,
+          ]}
+        >
+          <Form ref={this.formRef}>
+            <Form.Item name="code">
+              <Input
+                autoFocus
+                allowClear
+                placeholder="輸入邀請碼"
+                onKeyDown={this.handleCodeModalKeyDown}
+              />
+            </Form.Item>
+          </Form>
+          <div style={{ width: '100%', height: 10, textAlign: 'center', color: 'red', fontWeight: 'bold' }}>
+            {visibleModel.codeModelErrorStr ? ('錯誤   不要偷看') : (<div />)}
+          </div>
+        </Modal>
       </div>
     );
   }

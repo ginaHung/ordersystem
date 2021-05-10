@@ -12,14 +12,14 @@ import { SYSTEM_TITLE, LoginRouter, HeaderPageRouter } from '../../utils/define'
 import OrderListPage from '../OrderListPage/OrderListPage';
 import icon from '../../../img/icon.png';
 
-const { Header, Content, Footer } = Layout;
+const { Header } = Layout;
 
 class HeaderPage extends React.Component {
-  // refStep1 = React.createRef();
 
   initState = {
     loginsuccess: sessionStorage.getItem('login'),
-    username: sessionStorage.getItem('emplid'),
+    userid: sessionStorage.getItem('emplid'),
+    username: sessionStorage.getItem('emplidname'),
   }
 
   constructor(props) {
@@ -29,26 +29,19 @@ class HeaderPage extends React.Component {
     };
   }
 
-  IsNullOrEmpty = async (txt) => {
-    if (txt === undefined || txt === null || txt === '') {
-      return true;
-    }
-    return false;
-  }
-
-  componentWillMount = () => { }
+  // componentWillMount = () => { }
 
   componentDidMount = async () => {
-    const { loginsuccess, username } = this.state;
+    const { loginsuccess, userid } = this.state;
     const { history } = this.props;
-    if (loginsuccess !== 'true' || await this.IsNullOrEmpty(username)) {
+    if (loginsuccess !== 'true' || await this.IsNullOrEmpty(userid)) {
       history.push(LoginRouter);
     }
   }
 
-  componentWillUpdate = () => { }
+  // componentWillUpdate = () => { }
 
-  componentDidUpdate = (lastProps, lastState) => { }
+  // componentDidUpdate = (lastProps, lastState) => { }
 
   handlePage = (path) => {
     const { history } = this.props;
@@ -60,8 +53,16 @@ class HeaderPage extends React.Component {
     history.push(LoginRouter);
   }
 
+  IsNullOrEmpty = async (txt) => {
+    if (txt === undefined || txt === null || txt === '') {
+      return true;
+    }
+    return false;
+  }
+
+
   render() {
-    const { username } = this.state;
+    const { userid, username } = this.state;
     return (
       <div style={{ height: '100%' }}>
         <Layout style={{ height: '100%' }}>
@@ -100,17 +101,6 @@ class HeaderPage extends React.Component {
           <div className="scroll-style">
             <div className="content-style">
               <Route key="4" path={`${HeaderPageRouter}/:view?/:id?`} component={OrderListPage} />
-              {/* // render={(props) => (
-                //   <OrderListPage
-                //     {...props}
-                //     ref={this.refStep1}
-                //     jumpRoute={this.handlePage}
-                //   // wrappedComponentRef={(form) => { this.refStep1 = form; }}
-                //   />
-                // )}
-            <Route key="5" path="/inspection/responsibleoperation" component={ResponsibleOperationPage} />
-            <Route key="6" path="/inspection/inspectionform" component={InspectionFormPage} />
-            <Route key="7" path="/inspection/vistor" component={VisitorPage} /> */}
             </div>
           </div>
           {/* <div className="footer-style">Footer</div> */}

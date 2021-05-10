@@ -25,21 +25,13 @@ class LoginPage extends React.Component {
     };
   }
 
-  componentWillMount = () => {
-    // console.log('WillMount LoginPage');
-  }
+  // componentWillMount = () => { }
 
-  componentDidMount = () => {
-    // console.log('DidMount LoginPage');
-  }
+  // componentDidMount = () => { }
 
-  componentWillUpdate = () => {
-    // console.log('WillUpdat LoginPage');
-  }
+  // componentWillUpdate = () => { }
 
-  componentDidUpdate = () => {
-    // console.log('DidUpdate LoginPage');
-  }
+  // componentDidUpdate = () => { }
 
   IsNullOrEmpty = async (txt) => {
     if (txt === undefined || txt === '') {
@@ -49,14 +41,12 @@ class LoginPage extends React.Component {
   }
 
   changeUserName = (e) => {
-    // console.log('changeDomain', e.target.value);
     this.setState({
       username: e.target.value,
     });
   }
 
   changePassword = (e) => {
-    // console.log('changeDomain', e.target.value);
     this.setState({
       password: e.target.value,
     });
@@ -91,6 +81,7 @@ class LoginPage extends React.Component {
       if (true) {
         sessionStorage.setItem('login', true);
         sessionStorage.setItem('emplid', username);
+        sessionStorage.setItem('emplidname', 'Gina');
         history.push(HeaderPageRouter);
       } else {
         // message.error(member.data.errorCode);
