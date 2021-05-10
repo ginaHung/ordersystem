@@ -6,10 +6,10 @@ const orderList = [
   {
     id: '1',
     id_num: '20210425-1016',
-    name: 'Drink-Milk Shop',
+    name: 'Drink1',
     user_id: '10910305',
     user: 'Gina', 
-    description: '喝好喝滿',
+    description: '喝起來',
     endtime: '2021/04/30 12:00',
     invite_code: '123456',
     menu_id: '',
@@ -22,10 +22,10 @@ const orderList = [
   {
     id: '2',
     id_num: '20210426-1116',
-    name: 'Drink-KEBUKE',
+    name: 'Drink2',
     user_id: '10910305',
     user: 'Gina', 
-    description: '喝好喝滿',
+    description: '喝起來',
     endtime: '2021/04/30 12:00',
     invite_code: '123456',
     menu_id: '',
@@ -54,7 +54,7 @@ const orderItemList = [
   
 ];
 
-exports.getOrderList = async () => {
+exports.getOrderList = async (ctx) => {
   try {
     ctx.body = new ResFormator(orderList).fullResponse;
   } catch (error) {
@@ -65,10 +65,25 @@ exports.getOrderList = async () => {
 exports.addOrder = async (ctx) => {
   try {
     const { body } = ctx.request;
-    tempBody = Object.assign(body);
-    tempBody.id = (orderList.length + 1).toString();
-    orderList.push(tempBody);
-    ctx.body = new ResFormator(orderList).fullResponse;
+    if (body.id_num === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'id_num is empty'}).fullResponse;
+    } else if (body.name === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'name is empty'}).fullResponse;
+    } else if (body.user_id === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'user_id is empty'}).fullResponse;
+    } else if (body.user === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'user is empty'}).fullResponse;
+    } else if (body.endtime === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'endtime is empty'}).fullResponse;
+    } else if (body.invite_code === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'invite_code is empty'}).fullResponse;
+    } else {
+      tempBody = Object.assign(body);
+      tempBody.id = (orderList.length + 1).toString();
+      orderList.push(tempBody);
+      ctx.body = new ResFormator(orderList).fullResponse;
+    }
+    
   } catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
   }
@@ -77,13 +92,29 @@ exports.addOrder = async (ctx) => {
 exports.editOrder = async (ctx) => {
   try {
     const { body } = ctx.request;
-    for (let i = 0; i < orderList.length; i += 1) {
-      if (body.id === orderList[i].id) {
-        orderList[i] = Object.assign(body);
-        break;
+    if (body.id === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'id is empty'}).fullResponse;
+    } else if (body.id_num === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'id_num is empty'}).fullResponse;
+    } else if (body.name === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'name is empty'}).fullResponse;
+    } else if (body.user_id === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'user_id is empty'}).fullResponse;
+    } else if (body.user === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'user is empty'}).fullResponse;
+    } else if (body.endtime === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'endtime is empty'}).fullResponse;
+    } else if (body.invite_code === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'invite_code is empty'}).fullResponse;
+    } else {
+      for (let i = 0; i < orderList.length; i += 1) {
+        if (body.id === orderList[i].id) {
+          orderList[i] = Object.assign(body);
+          break;
+        }
       }
-    }
-    ctx.body = new ResFormator('success').fullResponse;
+      ctx.body = new ResFormator('success').fullResponse;
+    } 
   } catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
   }
@@ -92,13 +123,17 @@ exports.editOrder = async (ctx) => {
 exports.deleteOrder = async (ctx) => {
   try {
     const { body } = ctx.request;
-    for (let i = 0; i < orderList.length; i += 1) {
-      if (body.id === orderList[i].id) {
-        orderList.splice(i, 1);
-        break;
+    if (body.id === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'id is empty'}).fullResponse;
+    } else {
+      for (let i = 0; i < orderList.length; i += 1) {
+        if (body.id === orderList[i].id) {
+          orderList.splice(i, 1);
+          break;
+        }
       }
+      ctx.body = new ResFormator('success').fullResponse;
     }
-    ctx.body = new ResFormator('success').fullResponse;
   } catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
   }
@@ -107,9 +142,21 @@ exports.deleteOrder = async (ctx) => {
 exports.addOrderItem = async (ctx) => {
   try {
     const { body } = ctx.request;
-    tempBody = Object.assign(body);
-    tempBody.id = (orderItemList.length + 1).toString();
-    orderItemList.push(tempBody);
-    ctx.body = new ResFormator(orderItemList).fullResponse;
+    if (body.orderID === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'orderID is empty'}).fullResponse;
+    } else if (body.user_name === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'user_name is empty'}).fullResponse;
+    } else if (body.item_name === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'item_name is empty'}).fullResponse;
+    } else if (body.price === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'price is empty'}).fullResponse;
+    } else {
+      tempBody = Object.assign(body);
+      tempBody.id = (orderItemList.length + 1).toString();
+      orderItemList.push(tempBody);
+      ctx.body = new ResFormator(orderItemList).fullResponse;
+    }
+  } catch (error) {
+    ctx.body = new ResFormator(new Error(error.message)).fullResponse;
   }
 };
