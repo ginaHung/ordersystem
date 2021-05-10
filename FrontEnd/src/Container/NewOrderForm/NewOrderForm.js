@@ -189,8 +189,7 @@ class NewOrderForm extends React.Component {
           // eslint-disable-next-line react/jsx-indent
           <Tooltip placement="topLeft" title="新增">
             <Button
-              style={{ backgroundColor: 'inherit', fontSize: '16px', fontWeight: 'bold', color: '#bf2121' }}
-              type="text"
+              style={{ backgroundColor: 'inherit', fontSize: '16px', fontWeight: 'bold', color: '#bf2121', border: '1px solid #bf2121' }}
               onClick={() => this.btnAddNewOrderRow()}
             >
               點我 +1
@@ -273,30 +272,34 @@ class NewOrderForm extends React.Component {
         title:
           // eslint-disable-next-line react/jsx-indent
           <div>
-            {this.fnIsViewTypeMyOrder() ? (
-              <div>
-                <span style={{ marginLeft: 40, color: 'red', fontSize: '20px' }}>*</span>
-                品項
-                <Tooltip placement="topLeft" title="刪除欄位">
-                  <DoubleLeftOutlined
-                    style={{ marginLeft: 15 }}
-                    onClick={() => this.fnSetColumnHeader(false)}
-                  />
-                </Tooltip>
-                <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
-                  <DoubleRightOutlined
-                    style={{ marginLeft: 8 }}
-                    onClick={() => this.fnSetColumnHeader(true)}
-                  />
-                </Tooltip>
-              </div>
-            ) : (
-              <div>
-                <span style={{ color: 'red', fontSize: '20px' }}>*</span>
-                品項
-              </div>
-            )}
+            <span style={{ color: 'red', fontSize: '20px' }}>*</span>
+            品項
           </div>,
+        // <div>
+        //   {this.fnIsViewTypeMyOrder() ? (
+        //     <div>
+        //       <span style={{ marginLeft: 40, color: 'red', fontSize: '20px' }}>*</span>
+        //       品項
+        //       <Tooltip placement="topLeft" title="刪除欄位">
+        //         <DoubleLeftOutlined
+        //           style={{ marginLeft: 15 }}
+        //           onClick={() => this.fnSetColumnHeader(false)}
+        //         />
+        //       </Tooltip>
+        //       <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
+        //         <DoubleRightOutlined
+        //           style={{ marginLeft: 8 }}
+        //           onClick={() => this.fnSetColumnHeader(true)}
+        //         />
+        //       </Tooltip>
+        //     </div>
+        //   ) : (
+        //     <div>
+        //       <span style={{ color: 'red', fontSize: '20px' }}>*</span>
+        //       品項
+        //     </div>
+        //   )}
+        // </div>,
         render: (text, record, index) => (
           <div>
             {(this.fnIsRowEditType(record.id)) ? (
@@ -445,7 +448,7 @@ class NewOrderForm extends React.Component {
                 maxLength={10}
                 onChange={(e) => this.ChangeTableClassName(e, 4)}
               />
-            ) : myOrderHeader.OrderClass[0]}
+            ) : myOrderHeader.OrderClass[4]}
           </div>,
         render: (text, record, index) => (
           <div>
@@ -600,6 +603,8 @@ class NewOrderForm extends React.Component {
     if (model === undefined) {
       tempModel = {
         menuModel: false,
+        saveNotifyModal: false,
+        tempStr: '',
       };
     } else {
       tempModel[model] = visible;
@@ -983,9 +988,29 @@ class NewOrderForm extends React.Component {
 
         <div className="orderbody">
           <div style={{ marginTop: 5, width: '100%' }}>
-            <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
-              訂單
-            </span>
+            {this.fnIsViewTypeMyOrder() ? (
+              <div>
+                <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+                  訂單
+                </span>
+                <Tooltip placement="topLeft" title="刪除欄位">
+                  <DoubleLeftOutlined
+                    style={{ marginLeft: 320 }}
+                    onClick={() => this.fnSetColumnHeader(false)}
+                  />
+                </Tooltip>
+                <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
+                  <DoubleRightOutlined
+                    style={{ marginLeft: 8 }}
+                    onClick={() => this.fnSetColumnHeader(true)}
+                  />
+                </Tooltip>
+              </div>
+            ) : (
+              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+                訂單
+              </span>
+            )}
           </div>
           <div style={{ marginTop: 5, width: '100%', height: '100%' }}>
             <Table
