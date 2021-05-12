@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 import { Tooltip, Table, Button, Divider, Input, message, Modal, Form } from 'antd';
 import { FileAddOutlined } from '@ant-design/icons';
 
-// import { verify } from '../../service/API';
+import { getAllOrderList } from '../../service/API';
 import {
   LoginRouter, HeaderPageRouter, modeViewType,
   defaultColumn, dataSource,
@@ -160,9 +160,12 @@ class OrderListPage extends React.Component {
   }
 
   fnGetmyList = async () => {
-    // console.log('get list');
+    // const data = {};
+    // const result = await getAllOrderList(data);
+    // console.log(result.data.result);
     this.setState({
       myOrderListArray: dataSource,
+      // myOrderListArray: result.data.result,
     });
   }
 

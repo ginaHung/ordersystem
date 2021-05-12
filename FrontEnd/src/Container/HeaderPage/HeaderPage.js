@@ -34,6 +34,10 @@ class HeaderPage extends React.Component {
   componentDidMount = async () => {
     const { loginsuccess, userid } = this.state;
     const { history } = this.props;
+    const cookieArr = window.document.cookie;// .split(';').map((str) => str.trim().split('='));
+
+    console.log('1111111111');
+    console.log(cookieArr);
     if (loginsuccess !== 'true' || await this.IsNullOrEmpty(userid)) {
       history.push(LoginRouter);
     }

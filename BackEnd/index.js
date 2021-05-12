@@ -1,11 +1,13 @@
 const Koa = require('koa');
 const convert = require('koa-convert');
 const koaBody = require('koa-body');
+const session = require('koa-session');
 const serve = require('koa-static');
 const helmet = require('koa-helmet');
 const cors = require('koa2-cors');
 const path = require('path');
 const logger = require('koa-logger');
+const passport = require('./src/rest/middlewares/passport');
 
 const app = new Koa();
 app.use(logger());
@@ -32,6 +34,7 @@ app.use(serve(path.join(__dirname, '/public'), {
 const whitelist = [
   'http://localhost',
   `http://localhost:8888`,
+  `http://127.0.0.1:8888`,
   `http://10.31.50.66`,
 ];
 
@@ -60,12 +63,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-
+app.keys = ['session_secret##'];
+app.use(session(app));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // router
 // app.use(require('./src/rest/middlewares/response'));
 app.use(require('./src/rest/middlewares/filter'));
 require('./src/routes')(app);
+
 
 process.on('unhandledRejection', (error) => {
   console.error('unhandledRejection', error);
@@ -79,7 +86,7 @@ server.listen(8080, '0.0.0.0', (err) => {
   if (err) {
     return console.log(`http server init error: ${err.message}`);
   }
-  console.log('http server listening at port: 80');
+  console.log('http server listening at port: 8080');
   return true;
 });
 
