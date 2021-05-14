@@ -6,7 +6,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Route } from 'react-router-dom';
 import { Layout, Button } from 'antd';
+import jwtDecode from 'jwt-decode';
 
+import { logout } from '../../service/API';
 import './HeaderPage.less';
 import { SYSTEM_TITLE, LoginRouter, HeaderPageRouter } from '../../utils/define';
 import OrderListPage from '../OrderListPage/OrderListPage';
@@ -29,15 +31,34 @@ class HeaderPage extends React.Component {
     };
   }
 
-  // componentWillMount = () => { }
+  // eslint-disable-next-line react/no-deprecated
+  componentWillMount = () => {
+    const cookieStr = window.document.cookie.split(';').map((str) => str.trim().split('='));
+    const cookieObj = {};
+    // console.log(cookieStr);
+    cookieStr.forEach((item) => {
+      const [key, val] = item;
+      cookieObj[key] = val;
+    });
+
+    if (cookieObj && cookieObj.loginstr) {
+      const decodeloginstr = jwtDecode(cookieObj.loginstr);
+      // console.log(decodeloginstr);
+      sessionStorage.setItem('login', decodeloginstr.loginsuccess);
+      sessionStorage.setItem('emplid', decodeloginstr.emplid);
+      sessionStorage.setItem('emplidname', decodeloginstr.username);
+      this.setState({
+        loginsuccess: sessionStorage.getItem('login'),
+        userid: sessionStorage.getItem('emplid'),
+        username: sessionStorage.getItem('emplidname'),
+      });
+    }
+  }
 
   componentDidMount = async () => {
     const { loginsuccess, userid } = this.state;
     const { history } = this.props;
-    const cookieArr = window.document.cookie;// .split(';').map((str) => str.trim().split('='));
-
-    console.log('1111111111');
-    console.log(cookieArr);
+    // console.log(`loginsuccess=${loginsuccess}`);
     if (loginsuccess !== 'true' || await this.IsNullOrEmpty(userid)) {
       history.push(LoginRouter);
     }
@@ -52,9 +73,12 @@ class HeaderPage extends React.Component {
     history.push(path);
   }
 
-  handleLogOut = () => {
+  handleLogOut = async () => {
     const { history } = this.props;
-    history.push(LoginRouter);
+    const result = await logout(null);
+    if (result.data === 'OK') {
+      history.push(LoginRouter);
+    }
   }
 
   IsNullOrEmpty = async (txt) => {

@@ -1,18 +1,29 @@
 const config = require('config');
-const passport = require('../../middlewares/passport');
-const { signJWTtoken } = require('../../../utils/normalFun');
+const Cookies = require('cookies');
+// const passport = require('../../middlewares/passport');
+const { azureSignCookie } = require('../../../utils/commonFunction');
 
 exports.callback = async (ctx) => {
+  console.log('callback');
   try {
-    passport.authenticate('azure_ad_oauth2');
-    console.log(ctx);
-
-    const token = await signJWTtoken('req.user.mailNickname');
-    ctx.cookies.set('login', token);
+    const loginstr = await azureSignCookie(ctx.req.user);
+    ctx.cookies.set('loginstr', loginstr, { httpOnly: false });
+    console.log(`${config.frontend_domain}${config.frontend_path}`);
     ctx.redirect(`${config.frontend_domain}${config.frontend_path}`);
   } catch (error) {
     console.log(error);
-    res.redirect(`${config.frontend_domain}/#/401`);
+    ctx.redirect(`${config.frontend_domain}/`);
     return;
+  }
+};
+
+exports.logout = async (ctx) => {
+  try {
+    console.log('logout');
+    ctx.logout();
+    ctx.status = 200;
+    return true;
+  } catch (error) {
+    console.log(error);
   }
 };

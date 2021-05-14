@@ -1,7 +1,6 @@
-// 進來會做的事情, 在這處理token, 每個進來都需要處理, 針對auth去產生token就好, 其他都是驗證
 // const passport = require('passport');
 const passport = require('koa-passport')
-const Strategy = require('passport-azure-ad-oauth2').Strategy;
+const { Strategy } = require('passport-azure-ad-oauth2');
 const axios = require('axios');
 const config = require('config');
 const jwt = require('jsonwebtoken');
@@ -15,7 +14,7 @@ passport.use(new Strategy({
   tenant: config.AAD_TENANT_ID,
 },
   async (accessToken, refreshToken, params, profile, done) => {
-    console.log('========accessToken==========', accessToken);
+    // console.log('========accessToken==========', accessToken);
     const aadUserData = await axios
       .get('https://graph.windows.net/wistron.com/me?api-version=1.6', { headers: { Authorization: accessToken } })
       .then((info) => info.data);
@@ -23,7 +22,7 @@ passport.use(new Strategy({
     const userData = {
       mailNickname, displayName, mail, physicalDeliveryOfficeName, surname, telephoneNumber,
     };
-    console.log('========user login==========', userData);
+    console.log('========user login==========');
     done(null, userData);
   }),
 );
@@ -68,32 +67,5 @@ module.exports.isAuthorized = (ctx, next) => {
     throw new UserError('INVALID USER');
   }
 };
-
-// module.exports.signJWTtoken = async (emplid) => {
-//   try {
-//     // const userRole = await getRole(emplid);
-//     // logger.debug(userRole);
-//     // const userInfo = await getUserInfoByEmplid(emplid);
-//     // const found = userInfo.deptid.match(new RegExp('^1|^JD', 'g'));
-//     // if (!found) { throw new Error('Permission denied'); }
-
-//     // const realToken = jwt.sign({
-//     //   // emplId: userInfo.emplid,
-//     //   // displayName: `${userInfo.nameA}/${userInfo.site}/Wistron`,
-//     //   // deptId: userInfo.deptid,
-//     //   // mail: userInfo.emailAddressA,
-//     //   // chineseName: userInfo.name,
-//     //   // functionTeam: userRole.functionTeam,
-//     //   // tmsRole: userRole.tmsRole,
-//     //   emplId: '10910305',
-//     //   displayName: 'Gina',
-//     //   loginsuccess: true,
-//     // }, config.JWT_SECRET);
-
-//     return realToken;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
 
 module.exports = passport;

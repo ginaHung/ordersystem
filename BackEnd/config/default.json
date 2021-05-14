@@ -9,10 +9,10 @@
   "prefix": "/api",
   "AAD_CLIENT_ID": "225a8ec0-122d-46d2-9caa-852a641a12af",
   "AAD_CLIENT_SECRET": "IIdfw1z~M7B2_yeaRcVu~b9.k~m21~.33O",
-  "AAD_CALLBACK_URL": "http://localhost:8080/",
+  "AAD_CALLBACK_URL": "http://localhost:8080/api/azure/callback",
   "AAD_RESOURCE_ID": "00000002-0000-0000-c000-000000000000",
   "AAD_TENANT_ID": "de0795e0-d7c0-4eeb-b9bb-bc94d8980d3b",
-  "frontend_domain": "http://127.0.0.1:8888",
+  "frontend_domain": "http://localhost:8888",
   "frontend_path": "/#/orderlist",
   "JWT_SECRET": "HymanIsGood"
 }

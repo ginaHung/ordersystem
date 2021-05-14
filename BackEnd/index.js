@@ -7,7 +7,7 @@ const helmet = require('koa-helmet');
 const cors = require('koa2-cors');
 const path = require('path');
 const logger = require('koa-logger');
-const passport = require('./src/rest/middlewares/passport');
+const passport = require('./src/rest/models/passport');
 
 const app = new Koa();
 app.use(logger());

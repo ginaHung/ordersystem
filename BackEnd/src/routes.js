@@ -1,6 +1,5 @@
 const Router = require('koa-router');
 const config = require('config');
-const passportAzure = require('./rest/middlewares/passport');
 const queryRouter = require('./rest/controllers/query/index');
 const loginRouter = require('./rest/controllers/login/index');
 const orderRouter = require('./rest/controllers/order/index');
