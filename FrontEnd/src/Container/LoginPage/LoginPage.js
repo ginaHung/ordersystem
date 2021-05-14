@@ -7,9 +7,8 @@ import { WindowsOutlined } from '@ant-design/icons';
 
 import './LoginPage.less';
 import cover from '../../../img/cover.png';
-import { verify } from '../../service/API';
-import { SYSTEM_TITLE, HeaderPageRouter } from '../../utils/define';
-import { env } from '../../utils/env';
+// import { verify } from '../../service/API';
+import { SYSTEM_TITLE, HeaderPageRouter, API_URL, AAD_CLIENT_ID } from '../../utils/define';
 // import NowTime from '../../Component/DateTime';
 
 class LoginPage extends React.Component {
@@ -94,12 +93,12 @@ class LoginPage extends React.Component {
     let redirectUrl = '';
 
     if (window.location.host.includes('localhost') || window.location.host.includes('127.0.0.1')) {
-      redirectUrl = `${env.API_URL}azure/callback`;
+      redirectUrl = `${API_URL}azure/callback`;
     } else {
       redirectUrl = `https://${window.location.host}/azure/callback`;
     }
 
-    const url = `https://login.microsoftonline.com/wistron.com/oauth2/authorize?client_id=${env.AAD_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}`;
+    const url = `https://login.microsoftonline.com/wistron.com/oauth2/authorize?client_id=${AAD_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}`;
     window.location.href = url;
   }
 

@@ -1,18 +1,11 @@
-// exports.CHECKLIST_CLOSE = Object.freeze(
-//   {
-//     OPEN: 'N', CLOSE: 'Y',
-//   },
-// );
-
-// exports.SKIP_CHECK_TOKEN_URL = [
-//   '/api/login/verify',
-//   '/api/login/testoracle',
-//   '/api/introduction/getIntroductionFile'];
-
 import React from 'react';
 import moment from 'moment';
 
+const API_URL = 'http://localhost:8080/api/';
+const AAD_CLIENT_ID = '225a8ec0-122d-46d2-9caa-852a641a12af';
+
 const SYSTEM_TITLE = '下午茶點餐系統';
+
 const LoginRouter = '/login';
 const HeaderPageRouter = '/orderlist';
 
@@ -21,13 +14,6 @@ const modeViewType = Object.freeze(
     orderlistView: 'orderlistView', neworderView: 'myOrder', joinView: 'joinOrder',
   },
 );
-
-const newOrderViewType = Object.freeze(
-  {
-    new: 'new', edit: 'edit', view: 'view',
-  },
-);
-
 
 const defaultColumn = [
   {
@@ -81,8 +67,6 @@ const defaultColumn = [
     ),
   },
 ];
-
-
 
 const NewOrderdata = [{
   id: '1',
@@ -321,11 +305,10 @@ const dataSource = [
 const dataSource2 = [];
 
 export {
+  API_URL, AAD_CLIENT_ID,
   SYSTEM_TITLE,
-  LoginRouter,
-  HeaderPageRouter,
+  LoginRouter, HeaderPageRouter,
   modeViewType,
-  newOrderViewType,
   defaultColumn,
 
   NewOrderdata,
