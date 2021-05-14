@@ -114,7 +114,13 @@ class NewOrderForm extends React.Component {
           dataHeaderResult.orderCode = tempheader.invite_code;
           dataHeaderResult.orderMenu = tempheader.orderMenu;
           dataHeaderResult.OrderClass = [tempheader.class_1, tempheader.class_2, tempheader.class_3, tempheader.class_4, tempheader.class_5];
-          const tempvisibleClassNum = dataHeaderResult.OrderClass.lastIndexOf('') > 0 ? dataHeaderResult.OrderClass.lastIndexOf('') : 5;
+
+          let tempvisibleClassNum = 0;
+          for (let i = 0; i < dataHeaderResult.OrderClass.length; i += 1) {
+            if (dataHeaderResult.OrderClass[i] || dataHeaderResult.OrderClass[i] !== '') {
+              tempvisibleClassNum = i + 1;
+            }
+          }
 
           this.setState({
             ViewType: ViewType === '' || Object.values(modeViewType).indexOf(ViewType) < 0 ? modeViewType.joinView : ViewType,
@@ -187,14 +193,19 @@ class NewOrderForm extends React.Component {
         width: 100,
         title:
           // eslint-disable-next-line react/jsx-indent
-          <Tooltip placement="topLeft" title="新增">
-            <Button
-              style={{ backgroundColor: 'inherit', fontSize: '16px', fontWeight: 'bold', color: '#bf2121', border: '1px solid #bf2121' }}
-              onClick={() => this.btnAddNewOrderRow()}
-            >
-              點我 +1
-            </Button>
-          </Tooltip>,
+          <div>
+            {this.fnIsCanJoin() ? (
+              <Tooltip placement="topLeft" title="新增">
+                <Button
+                  style={{ backgroundColor: 'inherit', fontSize: '16px', fontWeight: 'bold', color: '#bf2121', border: '1px solid #bf2121' }}
+                  onClick={() => this.btnAddNewOrderRow()}
+                  disabled={!this.fnIsCanJoin()}
+                >
+                  點我 +1
+                </Button>
+              </Tooltip>
+            ) : '#'}
+          </div>,
         render: (text, record, index) => (
           <div>
             {this.fnIsRowCanEdit(record.id) && this.fnIsRowEditType(record.id) ? (
@@ -231,7 +242,7 @@ class NewOrderForm extends React.Component {
                 </Tooltip>
               </div>
             ) : <div />}
-            {!this.fnIsRowCanEdit(record.id) && !this.fnIsRowEditType(record.id) ? (
+            {!this.fnIsRowCanEdit(record.id) ? (
               <Tooltip placement="topLeft" title="不可編輯">
                 <LikeOutlined className="tableCell-icon" />
               </Tooltip>
@@ -511,7 +522,7 @@ class NewOrderForm extends React.Component {
       tempHeader.push(header3[i]);
     }
 
-    if (!flagAdd) { // 清空內容
+    if (flagAdd !== undefined && flagAdd === false) { // 清空內容
       for (let i = 0; i < tempRows.length; i += 1) {
         for (let j = tempV + 1; j <= 5; j += 1) {
           tempRows[i][`class_${j}`] = '';
@@ -633,7 +644,7 @@ class NewOrderForm extends React.Component {
   };
 
   btnAddNewOrderRow = async () => {
-    const { orderId, myOrderRow } = this.state;
+    const { userid, orderId, myOrderRow } = this.state;
     const tempRows = JSON.parse(JSON.stringify(myOrderRow));
     const newRow = {
       id: `+${myOrderRow.length}`,
@@ -648,6 +659,7 @@ class NewOrderForm extends React.Component {
       remark: '',
       price: '',
       type: '2',
+      create_user: userid,
     };
     tempRows.unshift(newRow);
 
@@ -733,15 +745,30 @@ class NewOrderForm extends React.Component {
     return result;
   }
 
+  fnIsCanJoin = () => {
+    // return true → 建立者/時間未大於endtime
+    // return false →
+    const { userid, myOrderHeader } = this.state;
+    let result = true;
+    if (myOrderHeader.orderuserId !== userid
+      && new Date(`${myOrderHeader.orderEndDate} ${myOrderHeader.orderEndTime}:59`) < new Date()) {
+      result = false;
+    }
+    return result;
+  }
+
   fnIsRowCanEdit = (id) => {
-    // return true → myOrder
-    // return false → joinOrder
-    const { ViewType, myOrderRow } = this.state;
+    // return true → 建立者/row建立者且時間未大於endtime
+    // return false →
+    const { ViewType, myOrderRow, userid, myOrderHeader } = this.state;
     const tempArray = myOrderRow;
     const index = tempArray.findIndex((p) => p.id === id);
     let result = false;
+
     if (ViewType === modeViewType.neworderView
-      || ((index >= 0 && tempArray[index].type > 0))) {
+      || userid === myOrderHeader.orderuserId
+      || (userid === tempArray[index].create_user
+        && (new Date(`${myOrderHeader.orderEndDate} ${myOrderHeader.orderEndTime}:59`) > new Date()))) {
       result = true;
     }
     return result;
@@ -755,7 +782,6 @@ class NewOrderForm extends React.Component {
     const tempArray = myOrderRow;
     const index = tempArray.findIndex((p) => p.id === id);
     let result = false;
-
     if (index >= 0 && tempArray[index].type === '2') result = true;
     return result;
   }
@@ -826,7 +852,8 @@ class NewOrderForm extends React.Component {
 
                 <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.btnSaveOrder()}>儲存</Button>
               </div>
-            ) : (
+            ) : <div />}
+            {!this.fnIsViewTypeMyOrder() && this.fnIsCanJoin() ? (
               <div>
                 <PushpinTwoTone size="large" style={{ fontSize: 28 }} twoToneColor="#e88b3f" />
                 <span style={{ fontSize: '26px', fontWeight: 'bold', marginLeft: 5 }}>{myOrderHeader.orderName}</span>
@@ -842,7 +869,22 @@ class NewOrderForm extends React.Component {
                 </Popconfirm>
                 <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.btnSaveOrderRow()}>儲存</Button>
               </div>
-            )}
+            ) : <div />}
+            {!this.fnIsViewTypeMyOrder() && !this.fnIsCanJoin() ? (
+              <div>
+                <PushpinTwoTone size="large" style={{ fontSize: 28 }} twoToneColor="#e88b3f" />
+                <span style={{ fontSize: '26px', fontWeight: 'bold', marginLeft: 5 }}>{myOrderHeader.orderName}</span>
+                <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
+                <Button
+                  type="dashed"
+                  size="large"
+                  style={{ marginRight: 10, float: 'right' }}
+                  onClick={() => this.fnReload()}
+                >
+                  離開
+                </Button>
+              </div>
+            ) : <div />}
           </div>
 
           <div style={{ marginTop: 10, width: '100%' }}>
@@ -995,13 +1037,13 @@ class NewOrderForm extends React.Component {
                 </span>
                 <Tooltip placement="topLeft" title="刪除欄位">
                   <DoubleLeftOutlined
-                    style={{ marginLeft: 320 }}
+                    style={{ marginLeft: 15, verticalAlign: 'text-top' }}
                     onClick={() => this.fnSetColumnHeader(false)}
                   />
                 </Tooltip>
                 <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
                   <DoubleRightOutlined
-                    style={{ marginLeft: 8 }}
+                    style={{ marginLeft: 8, verticalAlign: 'text-top' }}
                     onClick={() => this.fnSetColumnHeader(true)}
                   />
                 </Tooltip>

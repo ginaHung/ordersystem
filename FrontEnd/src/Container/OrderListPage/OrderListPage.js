@@ -15,8 +15,8 @@ import {
   LoginRouter, HeaderPageRouter, modeViewType,
   defaultColumn, dataSource,
 } from '../../utils/define';
-import './OrderListPage.less';
 import NewOrderForm from '../NewOrderForm/NewOrderForm';
+import './OrderListPage.less';
 
 const { Search } = Input;
 
@@ -137,7 +137,7 @@ class OrderListPage extends React.Component {
         <div>
           <Button
             size="middle"
-            disabled={new Date(`${record.endtime}:59`) < new Date()}
+            // disabled={new Date(`${record.endtime}:59`) < new Date()}
             onClick={() => this.btnJoin(record)}
           >
             +1
@@ -398,7 +398,7 @@ class OrderListPage extends React.Component {
             </Form.Item>
           </Form>
           <div style={{ width: '100%', height: 10, textAlign: 'center', color: 'red', fontWeight: 'bold' }}>
-            {visibleModel.codeModelErrorStr ? ('錯誤   不要偷看') : (<div />)}
+            {visibleModel.codeModelErrorStr ? ('邀請碼錯誤') : (<div />)}
           </div>
         </Modal>
       </div>

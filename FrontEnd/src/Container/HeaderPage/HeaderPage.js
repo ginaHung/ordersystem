@@ -9,10 +9,10 @@ import { Layout, Button } from 'antd';
 import jwtDecode from 'jwt-decode';
 
 import { logout } from '../../service/API';
-import './HeaderPage.less';
 import { SYSTEM_TITLE, LoginRouter, HeaderPageRouter } from '../../utils/define';
 import OrderListPage from '../OrderListPage/OrderListPage';
 import icon from '../../../img/icon.png';
+import './HeaderPage.less';
 
 const { Header } = Layout;
 
@@ -107,14 +107,8 @@ class HeaderPage extends React.Component {
             </div>
             <div style={{ marginTop: 15, float: 'right' }}>
               <Button
-                style={{
-                  height: '60%',
-                  fontSize: '22px',
-                  lineHeight: '30px',
-                  float: 'right',
-                  fontWeight: 'bold',
-                  backgroundColor: 'inherit',
-                }}
+                className="btnLogout"
+                style={{ float: 'right', height: '60%' }}
                 onClick={this.handleLogOut}
               >
                 登出
@@ -122,7 +116,7 @@ class HeaderPage extends React.Component {
             </div>
             <div style={{ marginTop: 20, float: 'right' }}>
               <span style={{ fontSize: '18px', lineHeight: '30px', fontWeight: 'bold', color: '#000000', float: 'right', marginRight: 20 }}>
-                {username}
+                {username}/{userid}
               </span>
             </div>
           </Header>
