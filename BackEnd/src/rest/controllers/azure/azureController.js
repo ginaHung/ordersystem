@@ -1,6 +1,5 @@
 const config = require('config');
 const Cookies = require('cookies');
-// const passport = require('../../middlewares/passport');
 const { azureSignCookie } = require('../../../utils/commonFunction');
 
 exports.callback = async (ctx) => {

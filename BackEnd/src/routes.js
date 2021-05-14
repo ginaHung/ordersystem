@@ -17,9 +17,9 @@ module.exports = (app) => {
 
   // all router root
   rootRouter.use('/query', queryRouter.routes());
+  rootRouter.use('/azure',azureRouter.routes());
   rootRouter.use('/login', loginRouter.routes());
   rootRouter.use('/order', orderRouter.routes());
-  rootRouter.use('/azure',azureRouter.routes());
 
   // http://{domainName}/{port}/api/...
   app.use(rootRouter.routes(), rootRouter.allowedMethods());
