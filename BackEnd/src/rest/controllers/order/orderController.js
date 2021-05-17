@@ -1,4 +1,6 @@
+const config = require('config');
 const returnFormat = require('../../../utils/makeReturnFunctionResult');
+const postgres = require('../../models/postgres');
 const ResFormator = require('../../../utils/formator');
 const { object } = require('joi');
 
@@ -54,13 +56,53 @@ const orderItemList = [
   
 ];
 
-exports.getOrderList = async (ctx) => {
+const { schema } = config;
+
+exports.getAllOrderList = async (ctx) => {
   try {
-    ctx.body = new ResFormator(orderList).fullResponse;
+    const sqlCommand = `
+    select id, id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id,
+      class_1, class_2, class_3, class_4, class_5
+    from  ${schema}.orderheader
+    `;
+    console.log(sqlCommand);
+    result = await postgres.query(sqlCommand);
+    if (result.success === false) {
+      ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+      // return false;
+    }
+    ctx.body = new ResFormator(result.data).fullResponse;
+    // return true;
   } catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
+    // return false;
   }
 };
+
+exports.getMyOrder = async (ctx) => {
+  const { body } = ctx.request;
+  try {
+    const sqlCommand = `
+    select id, id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id,
+      class_1, class_2, class_3, class_4, class_5
+    from  ${schema}.orderheader
+    where user_id = '${body.user_id}'
+    `;
+    console.log(sqlCommand);
+    result = await postgres.query(sqlCommand);
+    if (result.success === false) {
+      ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+      // return false;
+    }
+    ctx.body = new ResFormator(result.data).fullResponse;
+    // return true;
+  } catch (error) {
+    ctx.body = new ResFormator(new Error(error.message)).fullResponse;
+    // return false;
+  }
+};
+
+
 
 exports.addOrder = async (ctx) => {
   try {

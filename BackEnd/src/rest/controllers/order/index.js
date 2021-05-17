@@ -4,19 +4,33 @@ const controller = require('./orderController');
 const router = new Router();
 
 /**
- * @api {POST} /api/order/getOrderList
+ * @api {POST} /api/order/getAllOrderList
  * @apiName getOrderList
  * @apiGroup login
  * @apiVersion 1.0.0
- * @apiParam {string} user, who want to login
- * @apiParam {string} password, user's password
  * @apiSuccessExample {json} Request Example
  * {
  *   
  *  
  * }
  */
- router.post('/getOrderList', controller.getOrderList);
+ router.post('/getAllOrderList', controller.getAllOrderList);
+
+ /**
+ * @api {POST} /api/order/getMyOrder
+ * @apiName getOrderList
+ * @apiGroup login
+ * @apiVersion 1.0.0
+ * @apiParam {string} id, who want to login
+
+ * @apiSuccessExample {json} Request Example
+ * {
+ *   user_id: '10905306'
+ *  
+ * }
+ */
+  router.post('/getMyOrder', controller.getMyOrder);
+
 
  /**
  * @api {POST} /api/order/addOrder
