@@ -6,9 +6,11 @@ exports.callback = async (ctx) => {
   console.log('callback');
   try {
     const loginstr = await azureSignCookie(ctx.req.user);
-    ctx.cookies.set('loginstr', loginstr, { httpOnly: false });
-    console.log(`${config.frontend_domain}${config.frontend_path}`);
-    ctx.redirect(`${config.frontend_domain}${config.frontend_path}`);
+    ctx.cookies.set('loginstr', loginstr,
+      { httpOnly: false,
+        maxAge:300000, // 5m
+      });
+    ctx.redirect(`${config.frontend_domain}${config.frontend_callback}`);
   } catch (error) {
     console.log(error);
     ctx.redirect(`${config.frontend_domain}/`);

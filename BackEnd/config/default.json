@@ -13,6 +13,6 @@
   "AAD_RESOURCE_ID": "00000002-0000-0000-c000-000000000000",
   "AAD_TENANT_ID": "de0795e0-d7c0-4eeb-b9bb-bc94d8980d3b",
   "frontend_domain": "http://localhost:8888",
-  "frontend_path": "/#/orderlist",
+  "frontend_callback": "/#/orderlist",
   "JWT_SECRET": "HymanIsGood"
 }

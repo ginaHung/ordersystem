@@ -34,7 +34,7 @@ app.use(serve(path.join(__dirname, '/public'), {
 const whitelist = [
   'http://localhost',
   `http://localhost:8888`,
-  `http://127.0.0.1:8888`,
+  // `http://127.0.0.1:8888`,
   `http://10.31.50.66`,
 ];
 
