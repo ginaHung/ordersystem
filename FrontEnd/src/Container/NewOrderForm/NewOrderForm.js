@@ -38,7 +38,6 @@ class NewOrderForm extends React.Component {
       saveNotifyModal: false,
       tempStr: '',
     },
-
     orderId: this.props.orderid,
     myOrderHeader: {
       orderNum: '',
@@ -84,12 +83,16 @@ class NewOrderForm extends React.Component {
 
   componentDidMount = async () => {
     const { userid, ViewType, orderId, myOrderHeader, myOrderRow } = this.state;
+    const sessionRoute = `${sessionStorage.getItem('View')}/${sessionStorage.getItem('OrderId')}`;
     const dataHeaderResult = myOrderHeader;
     let datarowResult = myOrderRow;
 
+    // console.log(`sessionRoute=${sessionRoute},state=${ViewType}/${orderId}`);
     if (await this.IsNullOrEmpty(userid)) {
       const { history } = this.props;
       history.push(LoginRouter);
+    } else if (sessionRoute !== `${ViewType}/${orderId}` || (ViewType === modeViewType.joinView && orderId === '')) {
+      await this.fnReload();
     } else {
       try {
         // #region init
@@ -134,7 +137,6 @@ class NewOrderForm extends React.Component {
         // #region table header
         await this.fnSetColumnHeader();
         // #endregion table header
-
       } catch (e) {
         message.error(e.message);
       }
@@ -555,7 +557,7 @@ class NewOrderForm extends React.Component {
     const { myOrderHeader } = this.state;
     const tempHeader = myOrderHeader;
     tempHeader[att] = e.target.value;
-    console.log(e.target.value);
+    // console.log(e.target.value);
     this.setState({
       myOrderHeader: tempHeader,
     });
@@ -591,7 +593,7 @@ class NewOrderForm extends React.Component {
 
     this.getBase64(info.file.originFileObj, (image) => {
       tempHeader.orderMenu = image;
-      console.log(image);
+      // console.log(image);
       this.setState({
         myOrderHeader: tempHeader,
       });

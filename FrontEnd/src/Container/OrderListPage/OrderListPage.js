@@ -34,8 +34,8 @@ class OrderListPage extends React.Component {
 
     myOrderListColumn: [], // 我建立的訂單 table header
     allOrderListColumn: [], // 所有訂單 table header
-    myOrderId: '',
 
+    myOrderId: '',
     tempOrderItem: null,
     visibleModel: {
       codeModel: false,
@@ -56,8 +56,8 @@ class OrderListPage extends React.Component {
   // }
 
   componentDidMount = async () => {
-    const { userid, ViewType } = this.state;
-    const { view, id } = this.props.match.params;
+    const { userid } = this.state;
+    const { view } = this.props.match.params;
     // console.log(`'2' ${ViewType}`);
 
     if (await this.IsNullOrEmpty(userid)) {
@@ -65,14 +65,19 @@ class OrderListPage extends React.Component {
       history.push(LoginRouter);
     } else {
       try {
+        const tempView = view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view;
+        const tempOrderId = await this.IsNullOrEmpty(sessionStorage.getItem('OrderId')) ? '' : sessionStorage.getItem('OrderId');
         this.setState({
-          ViewType: view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view,
-          myOrderId: await this.IsNullOrEmpty(id) ? '' : id,
+          ViewType: tempView,
+          myOrderId: tempView === modeViewType.orderlistView ? '' : tempOrderId,
         });
-        // console.log(`'1' ${ViewType}`);
-        await this.fnSetColumnHeader();
-        await this.fnGetmyList();
-        await this.fnGetallList();
+
+        const { ViewType } = this.state;
+        if (ViewType === modeViewType.orderlistView) {
+          await this.fnSetColumnHeader();
+          await this.fnGetmyList();
+          await this.fnGetallList();
+        }
 
       } catch (e) {
         message.error(e.message);
@@ -83,9 +88,12 @@ class OrderListPage extends React.Component {
   // props update
   componentWillReceiveProps = async (nextProps) => {
     const { view } = nextProps.match.params;
-    // console.log(`'componentWillReceiveProps' ${view} ${ViewType}`);
+    // console.log(`'componentWillReceiveProps' ${view}`);
+    const tempView = view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view;
+    const tempOrderId = await this.IsNullOrEmpty(sessionStorage.getItem('OrderId')) ? '' : sessionStorage.getItem('OrderId');
     this.setState({
-      ViewType: view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view,
+      ViewType: tempView,
+      myOrderId: tempView === modeViewType.orderlistView ? '' : tempOrderId,
     });
 
     const { ViewType } = this.state;
@@ -121,7 +129,7 @@ class OrderListPage extends React.Component {
       align: 'center',
       render: (text, record) => (
         <div>
-          <Button size="middle" onClick={() => this.btnEditOrderList(record.id)}>
+          <Button size="middle" onClick={() => this.btnAddorEditOrderList(record.id)}>
             編輯 - 完成
           </Button>
         </div>
@@ -153,8 +161,9 @@ class OrderListPage extends React.Component {
   }
 
   fnReload = async () => {
-    console.log('reload');
+    // console.log('reload');
     this.handlePage(HeaderPageRouter);
+    await this.handleSessionStorage('', '');
     await this.fnGetmyList();
     await this.fnGetallList();
   }
@@ -181,38 +190,31 @@ class OrderListPage extends React.Component {
 
   // #region btn --------------------------------------
 
-  btnAddOrderList = () => {
-    const { history } = this.props;
-
-    this.setState({
-      myOrderId: '',
-    });
-    history.push(`${HeaderPageRouter}/${modeViewType.neworderView}`);
-  }
-
-  btnEditOrderList = async (id) => {
+  btnAddorEditOrderList = async (id) => {
     this.setState({
       myOrderId: id,
+      ViewType: modeViewType.neworderView,
     });
-    this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}/${id}`);
+    await this.handleSessionStorage(modeViewType.neworderView, id);
+    this.handlePage(`${HeaderPageRouter}/${modeViewType.neworderView}`);
   }
 
   btnOnSearch = async (value) => {
     // console.log(value);
     const { allOrderListArray } = this.state;
     let tempArray = [];
-    const compareAtt = ['id_num', 'name', 'user_id', 'user_name', 'endtime'];
+    const compareAtt = ['id_num', 'name', 'user_name', 'endtime']; // 'user_id'
     if (await this.IsNullOrEmpty(value)) {
       tempArray = allOrderListArray;
     } else {
       for (let i = 0; i < allOrderListArray.length; i += 1) {
-        // console.log(Object.values(allOrderListArray[i]).join(''));
         let str = '';
         for (let j = 0; j < compareAtt.length; j += 1) {
           if (allOrderListArray[i][compareAtt[j]] !== null) {
             str = `${str}${allOrderListArray[i][compareAtt[j]]}`;
           }
         }
+        // console.log(str);
 
         if (str.toUpperCase().includes(value)) {
           tempArray.push(allOrderListArray[i]);
@@ -240,9 +242,10 @@ class OrderListPage extends React.Component {
       .then(async (values) => {
         if (values.code !== undefined
           && (tempOrderItem.invite_code === undefined || values.code.trim() === tempOrderItem.invite_code)) {
+          await this.handleSessionStorage(modeViewType.joinView, myOrderId);
           this.formRef.current.resetFields();
           await this.fnSetModelVisible(false);
-          this.handlePage(`${HeaderPageRouter}/${modeViewType.joinView}/${myOrderId}`);
+          this.handlePage(`${HeaderPageRouter}/${modeViewType.joinView}`);
         } else {
           await this.fnSetModelVisible(true, 'codeModelErrorStr');
         }
@@ -250,6 +253,16 @@ class OrderListPage extends React.Component {
       .catch((err) => {
         message.error(`btnCheckInviteCode: ${err}`);
       });
+  }
+
+  btnCancelCheckInviteCode = async () => {
+    this.setState({
+      myOrderId: '',
+      tempOrderItem: null,
+      ViewType: modeViewType.orderlistView,
+    });
+    await this.handleSessionStorage('', '');
+    await this.fnSetModelVisible(false);
   }
 
   fnSetModelVisible = async (visible, model) => {
@@ -291,6 +304,13 @@ class OrderListPage extends React.Component {
     return false;
   }
 
+  handleSessionStorage = async (view, id) => {
+    // console.log(`View=${view},orderid=${id}`);
+    sessionStorage.setItem('View', view);
+    sessionStorage.setItem('OrderId', id);
+  }
+
+
   render() {
     const {
       ViewType,
@@ -315,7 +335,7 @@ class OrderListPage extends React.Component {
                     icon={<FileAddOutlined />}
                     size="large"
                     style={{ marginLeft: 10 }}
-                    onClick={() => this.btnAddOrderList()}
+                    onClick={() => this.btnAddorEditOrderList('')}
                   />
                 </Tooltip>
               </div>
@@ -384,8 +404,9 @@ class OrderListPage extends React.Component {
           destroyOnClose
           footer={[
             <Button onClick={() => this.btnCheckInviteCode()}>確認</Button>,
-            <Button onClick={() => this.fnSetModelVisible(false)}>取消</Button>,
+            <Button onClick={() => this.btnCancelCheckInviteCode(false)}>取消</Button>,
           ]}
+          onCancel={() => this.btnCancelCheckInviteCode(false)}
         >
           <Form ref={this.formRef}>
             <Form.Item name="code">
