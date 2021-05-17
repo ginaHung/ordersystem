@@ -50,6 +50,7 @@ class NewOrderForm extends React.Component {
       orderCode: '',
       orderMenu: '',
       OrderClass: ['', '', '', '', ''],
+      orderDiscribeArr: [],
     },
     myOrderRow: [],
     // myOrderRow: [{
@@ -117,6 +118,7 @@ class NewOrderForm extends React.Component {
           dataHeaderResult.orderCode = tempheader.invite_code;
           dataHeaderResult.orderMenu = tempheader.orderMenu;
           dataHeaderResult.OrderClass = [tempheader.class_1, tempheader.class_2, tempheader.class_3, tempheader.class_4, tempheader.class_5];
+          dataHeaderResult.orderDiscribeArr = await this.handleDiscribe();
 
           let tempvisibleClassNum = 0;
           for (let i = 0; i < dataHeaderResult.OrderClass.length; i += 1) {
@@ -805,6 +807,31 @@ class NewOrderForm extends React.Component {
     await fnReload();
   }
 
+  handleDiscribe = async () => {
+    const { myOrderHeader } = this.state;
+    const str = myOrderHeader.orderDiscribe;
+    const brChar = ['\r', '\n'];
+    const htmlArr = [];
+    let startId = 0;
+    try {
+      // console.log(`${str},str.length=${str.length}`);
+      for (let i = 0; i < str.length; i += 1) {
+        if (brChar.indexOf(str[i]) >= 0) {
+          console.log(str.substring(startId, i));
+          htmlArr.push({ str: str.substring(startId, i) });
+          startId = i + 1;
+        } else if (i + 1 === str.length) {
+          htmlArr.push({ str: str.substring(startId, i + 1) });
+        }
+      }
+      console.log('htmlArr');
+      console.log(htmlArr);
+    } catch (err) {
+      message.error(err.message);
+    }
+    return htmlArr;
+  }
+
 
   render() {
     const {
@@ -1009,19 +1036,31 @@ class NewOrderForm extends React.Component {
                 <td style={{ verticalAlign: 'top' }}>
                   {this.fnIsViewTypeMyOrder() ? (
                     <TextArea
-                      style={{
-                        width: '90%', fontWeight: 'bold', marginLeft: 5, backgroundColor: 'inherit',
-                      }}
+                      style={{ width: '90%', marginLeft: 5, backgroundColor: 'inherit' }}
+                      placeholder="url 請單獨一行"
                       value={myOrderHeader.orderDiscribe}
                       onScroll
                       rows={7}
-                      showCount
-                      maxLength={500}
+                      // showCount
+                      maxLength={200}
                       onChange={(e) => this.changeOrderHeader(e, 'orderDiscribe')}
                     />
                   ) : (
-                    <div className="discribetxtbox">{myOrderHeader.orderDiscribe}</div>
-                  )}
+                    <div className="discribetxtbox">
+                      {myOrderHeader.orderDiscribeArr.map((item) => {
+                        return (
+                          <div>
+                            {/* eslint-disable-next-line no-nested-ternary */}
+                            { item.str.indexOf('https://') >= 0 || item.str.indexOf('http://') >= 0 ? (
+                              <a href={item.str.trim()} target="blank">{item.str}</a>
+                            ) : item.str.trim() === '' ? (<br />) : item.str}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    // <div className="discribetxtbox">{myOrderHeader.orderDiscribe}</div>
+                  )
+                  }
                 </td>
               </tr>
             </table>

@@ -146,6 +146,7 @@ const dataSource = [
     endtime: '2021/05/29 10:59',
     dscribe: `西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公
     园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号西湖区湖底公园1号
+    
     https://ant.design/components/icon-cn/#API
     1234`,
     invite_code: '12345',
@@ -162,7 +163,10 @@ const dataSource = [
     user_id: '10910305',
     user_name: 'Gina',
     endtime: '2021/05/01 10:59',
-    dscribe: '',
+    dscribe: `12345
+    123456
+    123
+    12345678`,
     invite_code: '12345',
     class_1: 'c1-2',
     class_2: 'c2-2',

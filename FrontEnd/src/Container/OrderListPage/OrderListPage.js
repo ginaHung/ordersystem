@@ -315,7 +315,7 @@ class OrderListPage extends React.Component {
     const {
       ViewType,
       myOrderListColumn, allOrderListColumn,
-      myOrderListArray, allOrderListArray, allOrderListArrayShow,
+      myOrderListArray, allOrderListArray, allOrderListArrayShow, tempOrderItem,
       myOrderId,
       visibleModel,
     } = this.state;
@@ -400,7 +400,7 @@ class OrderListPage extends React.Component {
 
         <Modal
           visible={visibleModel.codeModel}
-          title="請輸入邀請碼"
+          title={`請輸入 [${tempOrderItem && tempOrderItem.name ? tempOrderItem.name : ''}] 邀請碼`}
           destroyOnClose
           footer={[
             <Button onClick={() => this.btnCheckInviteCode()}>確認</Button>,

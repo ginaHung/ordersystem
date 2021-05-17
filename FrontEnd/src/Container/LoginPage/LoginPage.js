@@ -91,7 +91,7 @@ class LoginPage extends React.Component {
 
   handleAzureLogin = async () => {
     let redirectUrl = '';
-    if (window.location.host.includes('localhost')) {
+    if (window.location.host.includes('localhost') || window.location.host.includes('127.0.0.1')) {
       redirectUrl = `${API_URL}azure/callback`;
     } else {
       redirectUrl = `https://${window.location.host}/azure/callback`;
