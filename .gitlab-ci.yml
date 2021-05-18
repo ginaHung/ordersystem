@@ -56,7 +56,7 @@ dev_build:
     - ls -a
     # - docker version
     - echo ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
-    - docker build -t ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
+    - docker build -t ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT} .
     - docker login ${REPO_URL} -u ${REPO_USER} -p ${REPO_PASSWORD}
     - docker push ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
     - docker push ${REPO_URL}/${REPO_PROJECT}/image:latest
