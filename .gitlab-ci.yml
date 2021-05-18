@@ -48,11 +48,11 @@ dev_build:
   script:
     - export COMMIT=$(date +"%Y%m%d%H%M")
     - echo ${COMMIT}
-    - echo $HARBOR_URL
-    - echo $HARBOR_PROJECT
+    - echo ${HARBOR_URL}
+    - echo ${HARBOR_PROJECT}
     - cd ./BackEnd 
     - ls -a
-    - docker version
+    # - docker version
     - docker build -t ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
     - docker login ${REPO_URL}
     - docker push ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
