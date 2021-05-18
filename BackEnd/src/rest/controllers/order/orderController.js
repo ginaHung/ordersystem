@@ -69,44 +69,137 @@ exports.getAllOrderList = async (ctx) => {
     result = await postgres.query(sqlCommand);
     if (result.success === false) {
       ctx.body = new ResFormator(new Error(result.error)).fullResponse;
-      // return false;
     }
     ctx.body = new ResFormator(result.data).fullResponse;
-    // return true;
   } catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
-    // return false;
   }
 };
 
 exports.getMyOrder = async (ctx) => {
   const { body } = ctx.request;
   try {
-    const sqlCommand = `
-    select id, id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id,
-      class_1, class_2, class_3, class_4, class_5
-    from  ${schema}.orderheader
-    where user_id = '${body.user_id}'
-    `;
-    console.log(sqlCommand);
-    result = await postgres.query(sqlCommand);
-    if (result.success === false) {
-      ctx.body = new ResFormator(new Error(result.error)).fullResponse;
-      // return false;
+    if (body.user_id === undefined) {
+      ctx.body = new ResFormator(new Error('user_id is empty')).fullResponse;
+    } else {
+      const sqlCommand = `
+      select id, id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id,
+        class_1, class_2, class_3, class_4, class_5
+      from  ${schema}.orderheader
+      where user_id = '${body.user_id}'`;
+      console.log(sqlCommand);
+      result = await postgres.query(sqlCommand);
+      if (result.success === false) {
+        ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+        return false;
+      }
+      ctx.body = new ResFormator(result.data).fullResponse;
     }
-    ctx.body = new ResFormator(result.data).fullResponse;
-    // return true;
+    
   } catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
-    // return false;
   }
 };
 
+exports.saveOrder = async (ctx) =>{
+  const { body } = ctx.request;
+  try {
+    if (body.id_num === undefined) {
+      ctx.body = new ResFormator(new Error('id_num is empty')).fullResponse;
+    } else if (body.name === undefined) {
+      ctx.body = new ResFormator(new Error('name is empty')).fullResponse;
+    } else if (body.user_id === undefined) {
+      ctx.body = new ResFormator(new Error('user_id is empty')).fullResponse;
+    } else if (body.user_name === undefined) {
+      ctx.body = new ResFormator(new Error('user_name is empty')).fullResponse;
+    } else if (body.describe === undefined) {
+      ctx.body = new ResFormator(new Error('describe is empty')).fullResponse;
+    } else if (body.endtime === undefined) {
+      ctx.body = new ResFormator(new Error('endtime is empty')).fullResponse;
+    } else if (body.invite_code === undefined) {
+      ctx.body = new ResFormator(new Error('invite_code is empty')).fullResponse;
+    } else if (body.menu === undefined) {
+      ctx.body = new ResFormator(new Error('menu is empty')).fullResponse;
+    } else {
+      if (body.id === undefined) { //insert
+        const sqlCommand = `
+        insert into ${schema}.menu_pic (menu) values ('${body.menu}') returning id as menu_id;
+  
+        insert into ${schema}.orderheader
+        (id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id, class_1, class_2, class_3, class_4, class_5)
+        values ('${body.id_num}', '${body.name}', '${body.user_id}', '${body.user_name}', '${body.describe}', 
+          to_char(now(), 'YYYY/MM/DD HH24:MI:SS'),'${body.invite_code}', menu_id, '${body.class_1}', '${body.class_2}', 
+          '${body.class_3}', '${body.class_4}', '${body.class_5}')
+        returning id as header_id;`;
+        
+          console.log(sqlCommand);
+          result = await postgres.query(sqlCommand);
+          if (result.success === false) {
+            ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+            return false;
+          }
+          ctx.body = new ResFormator(result.data).fullResponse;
+  
+      }
+    } 
+  } catch (error) {
+    ctx.body = new ResFormator(new Error(error.message)).fullResponse;
+  }
+}
 
+exports.getOrderData = async (ctx) => {
+  const { body } = ctx.request;
+  try {
+    if (body.header_id === undefined) {
+      ctx.body = new ResFormator(new Error('header_id is empty')).fullResponse;
+    } else {
+      const sqlCommand = `
+      select ${schema}.orderheader.name, ${schema}.orderheader.user_id, ${schema}.orderheader.user_name, ${schema}.orderheader.endtime, 
+        ${schema}.orderheader.invite_code, ${schema}.orderheader.describe, ${schema}.menu_pic.menu
+      from  ${schema}.orderheader
+      inner join ${schema}.menu_pic on ${schema}.menu_pic.id = ${body.header_id}
+      where ${schema}.orderheader.id = ${body.header_id};
+      `;
+      console.log(sqlCommand);
+      result = await postgres.query(sqlCommand);
+      if (result.success === false) {
+        ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+        return false;
+      }
+      ctx.body = new ResFormator(result.data).fullResponse;
+    }
+  } catch (error) {
+    ctx.body = new ResFormator(new Error(error.message)).fullResponse;
+  }
+}
+
+exports.getOrderItem = async (ctx) => {
+  const { body } = ctx.request;
+  try {
+    if (body.header_id === undefined) {
+      ctx.body = new ResFormator(new Error('header_id is empty')).fullResponse;
+    } else {
+      const sqlCommand = `
+      select id, header_id, user_name, create_id, item_name, class_1, class_2, class_3, class_4, class_5
+      from ${schema}.orderitem
+      where ${schema}.orderitem.header_id = ${body.header_id};
+      `;
+      console.log(sqlCommand);
+      result = await postgres.query(sqlCommand);
+      if (result.success === false) {
+        ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+        return false;
+      }
+      ctx.body = new ResFormator(result.data).fullResponse;
+    }
+  } catch (error) {
+    ctx.body = new ResFormator(new Error(error.message)).fullResponse;
+  }
+}
 
 exports.addOrder = async (ctx) => {
+  const { body } = ctx.request;
   try {
-    const { body } = ctx.request;
     if (body.id_num === undefined) {
       ctx.body = new ResFormator({name: 'Error', message: 'id_num is empty'}).fullResponse;
     } else if (body.name === undefined) {
