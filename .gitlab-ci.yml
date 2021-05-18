@@ -50,10 +50,11 @@ dev_build:
     - echo ${COMMIT}
     - echo ${HARBOR_URL}
     - echo ${HARBOR_PROJECT}
-    - cd ./BackEnd 
+    # - cd BackEnd
     - ls -a
     # - docker version
-    - docker build -t ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
+    - echo ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
+    - docker build -t ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT} -f ./BackEnd/Dockerfile
     - docker login ${REPO_URL}
     - docker push ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
     - docker push ${REPO_URL}/${REPO_PROJECT}/image:latest
