@@ -42,8 +42,10 @@ dev_build:
     - azure_login
   image: docker
   stage: dev_build
-  ervices:
+  services:
     - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
   tags:
     - aws
     - m4-large
@@ -55,6 +57,6 @@ dev_build:
     # - docker version
     - echo ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
     - docker build --no-cache -t ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
-    - docker login ${REPO_URL} -u ${REPO_USER} --password-stdin
+    - docker login ${REPO_URL} -u ${REPO_USER} -p ${REPO_PASSWORD}
     - docker push ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
     - docker push ${REPO_URL}/${REPO_PROJECT}/image:latest
