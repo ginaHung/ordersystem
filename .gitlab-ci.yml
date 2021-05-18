@@ -3,221 +3,60 @@ variables:
 
 cache:
   paths:
-  - BackEnd/public/
-  - BackEnd/node_modules/
-  - FrontEnd/node_modules/
+    - BackEnd/public/
+    - BackEnd/node_modules/
+    - FrontEnd/node_modules/
 
-.before_script_template: &build_test-integration
-  before_script:
-  # - sudo docker stop document_cicd
-  # - sudo docker container rm document_cicd
-  - sudo bash delDocker.sh
-  - sudo bash delNodeModule.sh
-  - sudo docker run --rm -v `pwd`/BackEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm install'
-  - sudo docker run --rm -v `pwd`/FrontEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm install'
+# .before_script_template: &build_test-integration
+#   before_script:
+#   # - sudo docker stop document_cicd
+#   # - sudo docker container rm document_cicd
+#   - sudo bash delDocker.sh
+#   - sudo bash delNodeModule.sh
+#   - sudo docker run --rm -v `pwd`/BackEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm install'
+#   - sudo docker run --rm -v `pwd`/FrontEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm install'
 
 stages:
-  - test
   - buildfrontend
-  - apidoc
-  - build
-  - run
-  - sync_dev_DB
-  - revert_dev_DB
-  - sync_uat_DB
-  - revert_uat_DB
-  - sync_prd_DB
-  - revert_prd_DB
-
-
-test:
-  stage: test
-  <<: *build_test-integration
-  tags:
-    - TedVMShell
-  script:
-    - sudo docker run --rm -v `pwd`/BackEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm run test'
+  - dev_build
 
 buildfrontend:
+  only:
+    - azure_login
+  image: node:12
   stage: buildfrontend
   tags:
-    - TedVMShell
+    - aws
+    - m4-large
   script:
-    - sudo docker run --rm -v `pwd`:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp/FrontEnd && npm run build && mkdir -p ../BackEnd/public/web && cp -rf ./dist/*.* ../BackEnd/public/web'
-
-
-apidoc:
-  stage: apidoc
-  <<: *build_test-integration
-  tags:
-    - TedVMShell
-  script:
-    - sudo docker run --rm -v `pwd`/BackEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm install apidoc -g && apidoc -i ./src/ -o ./public/apidoc'
-
-build:
-   stage: build
-   <<: *build_test-integration
-   tags:
-     - TedVMShell
-   script:
-#     # 安裝執行環境
-#     # 跑BackEnd資料夾裡的docker資料夾裡的Makefile檔案中的docker-builed，
-#     # 這邊在Makefile上面有去讀取這個git repository的version來作為docker image的tag
-     - make docker-build -C ./BackEnd/docker
-     - make docker-push -C ./BackEnd/docker
-
-run:
-   stage: run
-   <<: *build_test-integration
-   tags:
-     - TedVMShell
-   script:
-     - docker run -p 80:80 --restart=always --name document_cicd -d repo.devpack.cc/anta_hsiao/document:latest
-
-
-sync_dev_DB:
-  only:
-    - dev
-  image: node:12-alpine
-  stage: sync_dev_DB
-  tags:
-    - TedVM
-  # before_script: 
-  #   - sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories 
-  #   - apk add --update --no-cache openssh sshpass
-  script:
-    - apk add --update --no-cache bash
-    - export SSHPASS=$vmpassword
-    - export NODE_ENV=dev
-    - export COMMIT=$(git rev-parse HEAD | cut -c1-6)
     - ls
-    - cd ./DB 
+    - cd ./FrontEnd 
     - npm install
     - ls
-    - bash migrate.sh
+    - npm run build
+    - mkdir -p ../BackEnd/public/web 
+    - cp -rf ./dist/*.* ../BackEnd/public/web
 
-revert_dev_DB:
+dev_build:
   only:
-    - dev
-  image: node:12-alpine
-  stage: revert_dev_DB
-  when: manual
+    - azure_login
+  image: docker
+  stage: dev_build
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
   tags:
-    - TedVM
-  # before_script: 
-  #   - sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories 
-  #   - apk add --update --no-cache openssh sshpass
+    - aws
+    - m4-large
   script:
-    - apk add --update --no-cache bash
-    - export SSHPASS=$vmpassword
-    - export NODE_ENV=dev
-    - export COMMIT=$(git rev-parse HEAD | cut -c1-6)
-    - ls
-    - cd ./DB 
-    - npm install
-    - ls
-    - mkdir migration
-    - ls
-    - chmod +x ./revert.sh
-    - bash revert.sh
-
-sync_uat_DB:
-  only:
-    - uat
-  image: node:12-alpine
-  stage: sync_uat_DB
-  tags:
-    - TedVM
-  # before_script: 
-  #   # 更换 alpine apk 源为阿里源 
-  #   - sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories 
-  #   # 安装 sshpass，sshpass 可以将密码传入 ssh，免去交互式输入密码 
-  #   - apk add --update --no-cache openssh sshpass
-  script:
-    - apk add --update --no-cache bash
-    - export SSHPASS=$vmpassword
-    - export NODE_ENV=uat
-    - export COMMIT=$(git rev-parse HEAD | cut -c1-6)
-    - ls
-    - cd ./DB 
-    - npm install
-    - ls
-    - bash migrate.sh
-
-revert_uat_DB:
-  only:
-    - uat
-  image: node:12-alpine
-  stage: revert_uat_DB
-  when: manual
-  tags:
-    - TedVM
-  # before_script: 
-  #   # 更换 alpine apk 源为阿里源 
-  #   - sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories 
-  #   # 安装 sshpass，sshpass 可以将密码传入 ssh，免去交互式输入密码 
-  #   - apk add --update --no-cache openssh sshpass
-  script:
-    - apk add --update --no-cache bash
-    - export SSHPASS=$vmpassword
-    - export NODE_ENV=uat
-    - export COMMIT=$(git rev-parse HEAD | cut -c1-6)
-    - ls
-    - cd ./DB 
-    - npm install
-    - ls
-    - mkdir migration
-    - ls
-    - chmod +x ./revert.sh
-    - bash revert.sh
-
-sync_prd_DB:
-  only:
-    - master
-  image: node:12-alpine
-  stage: sync_prd_DB
-  tags:
-    - TedVM
-  # before_script: 
-  #   # 更换 alpine apk 源为阿里源 
-  #   - sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories 
-  #   # 安装 sshpass，sshpass 可以将密码传入 ssh，免去交互式输入密码 
-  #   - apk add --update --no-cache openssh sshpass
-  script:
-    - apk add --update --no-cache bash
-    - export SSHPASS=$vmpassword
-    - export NODE_ENV=prd
-    - export COMMIT=$(git rev-parse HEAD | cut -c1-6)
-    - ls
-    - cd ./DB 
-    - npm install
-    - ls
-    - bash migrate.sh
-
-revert_prd_DB:
-  only:
-    - master
-  image: node:12-alpine
-  stage: revert_prd_DB
-  when: manual
-  tags:
-    - TedVM
-  # before_script: 
-  #   # 更换 alpine apk 源为阿里源 
-  #   - sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories 
-  #   # 安装 sshpass，sshpass 可以将密码传入 ssh，免去交互式输入密码 
-  #   - apk add --update --no-cache openssh sshpass
-  script:
-    - apk add --update --no-cache bash
-    - export SSHPASS=$vmpassword
-    - export NODE_ENV=prd
-    - export COMMIT=$(git rev-parse HEAD | cut -c1-6)
-    - ls
-    - cd ./DB 
-    - npm install
-    - ls
-    - mkdir migration
-    - ls
-    - chmod +x ./revert.sh
-    - bash revert.sh
-
+    - export COMMIT=$(date +"%Y%m%d%H%M")
+    - echo ${COMMIT}
+    - cd BackEnd
+    - ls -a
+    # - docker version
+    - echo ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
+    - docker build -t ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT} .
+    - docker login ${REPO_URL} -u ${REPO_USER} --password-stdin
+    - docker push ${REPO_URL}/${REPO_PROJECT}/image:${COMMIT}
+    - docker push ${REPO_URL}/${REPO_PROJECT}/image:latest
