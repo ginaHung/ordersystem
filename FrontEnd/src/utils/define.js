@@ -58,11 +58,11 @@ const defaultColumn = [
   },
   {
     title: '描述',
-    dataIndex: 'dscribe',
+    dataIndex: 'describe',
     align: 'left',
     render: (text, record) => (
       <div>
-        {(record.dscribe.length > 30) ? `${record.dscribe.slice(0, 30)}...` : record.dscribe}
+        {(record.describe && record.describe.length > 30) ? `${record.describe.slice(0, 30)}...` : record.describe}
       </div>
     ),
   },

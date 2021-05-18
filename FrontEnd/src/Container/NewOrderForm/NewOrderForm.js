@@ -179,6 +179,27 @@ class NewOrderForm extends React.Component {
     return tempNum;
   }
 
+  handleDiscribe = async () => {
+    const { myOrderHeader } = this.state;
+    const str = myOrderHeader.orderDiscribe;
+    const brChar = ['\r', '\n'];
+    const htmlArr = [];
+    let startId = 0;
+    try {
+      for (let i = 0; i < str.length; i += 1) {
+        if (brChar.indexOf(str[i]) >= 0) {
+          htmlArr.push({ str: str.substring(startId, i) });
+          startId = i + 1;
+        } else if (i + 1 === str.length) {
+          htmlArr.push({ str: str.substring(startId, i + 1) });
+        }
+      }
+    } catch (err) {
+      message.error(err.message);
+    }
+    return htmlArr;
+  }
+
   fnSetColumnHeader = async (flagAdd) => {
     const { visibleClass, myOrderHeader, myOrderRow } = this.state;
     const tempOrderHeader = myOrderHeader;
@@ -805,31 +826,6 @@ class NewOrderForm extends React.Component {
   fnReload = async () => {
     const { fnReload } = this.props;
     await fnReload();
-  }
-
-  handleDiscribe = async () => {
-    const { myOrderHeader } = this.state;
-    const str = myOrderHeader.orderDiscribe;
-    const brChar = ['\r', '\n'];
-    const htmlArr = [];
-    let startId = 0;
-    try {
-      // console.log(`${str},str.length=${str.length}`);
-      for (let i = 0; i < str.length; i += 1) {
-        if (brChar.indexOf(str[i]) >= 0) {
-          console.log(str.substring(startId, i));
-          htmlArr.push({ str: str.substring(startId, i) });
-          startId = i + 1;
-        } else if (i + 1 === str.length) {
-          htmlArr.push({ str: str.substring(startId, i + 1) });
-        }
-      }
-      console.log('htmlArr');
-      console.log(htmlArr);
-    } catch (err) {
-      message.error(err.message);
-    }
-    return htmlArr;
   }
 
 

@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 import { Tooltip, Table, Button, Divider, Input, message, Modal, Form } from 'antd';
 import { FileAddOutlined } from '@ant-design/icons';
 
-import { getAllOrderList } from '../../service/API';
+import { getMyOrder, getAllOrderList } from '../../service/API';
 import {
   LoginRouter, HeaderPageRouter, modeViewType,
   defaultColumn, dataSource,
@@ -58,7 +58,6 @@ class OrderListPage extends React.Component {
   componentDidMount = async () => {
     const { userid } = this.state;
     const { view } = this.props.match.params;
-    // console.log(`'2' ${ViewType}`);
 
     if (await this.IsNullOrEmpty(userid)) {
       const { history } = this.props;
@@ -78,7 +77,6 @@ class OrderListPage extends React.Component {
           await this.fnGetmyList();
           await this.fnGetallList();
         }
-
       } catch (e) {
         message.error(e.message);
       }
@@ -88,7 +86,6 @@ class OrderListPage extends React.Component {
   // props update
   componentWillReceiveProps = async (nextProps) => {
     const { view } = nextProps.match.params;
-    // console.log(`'componentWillReceiveProps' ${view}`);
     const tempView = view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view;
     const tempOrderId = await this.IsNullOrEmpty(sessionStorage.getItem('OrderId')) ? '' : sessionStorage.getItem('OrderId');
     this.setState({
@@ -116,7 +113,6 @@ class OrderListPage extends React.Component {
   fnSetColumnHeader = async () => {
     const tempMyArr = [];
     const tempAllArr = [];
-
     for (let i = 0; i < defaultColumn.length; i += 1) {
       tempMyArr.push(defaultColumn[i]);
       tempAllArr.push(defaultColumn[i]);
@@ -161,7 +157,6 @@ class OrderListPage extends React.Component {
   }
 
   fnReload = async () => {
-    // console.log('reload');
     this.handlePage(HeaderPageRouter);
     await this.handleSessionStorage('', '');
     await this.fnGetmyList();
@@ -169,20 +164,29 @@ class OrderListPage extends React.Component {
   }
 
   fnGetmyList = async () => {
-    // const data = {};
-    // const result = await getAllOrderList(data);
-    // console.log(result.data.result);
-    this.setState({
-      myOrderListArray: dataSource,
-      // myOrderListArray: result.data.result,
-    });
+    const { userid } = this.state;
+    let result = null;
+
+    const data = { user_id: userid };
+    result = await getMyOrder(data);
+    if (result.data.success) {
+      const myList = result.data.result;
+      this.setState({
+        myOrderListArray: myList,
+      });
+    }
   }
 
   fnGetallList = async () => {
-    this.setState({
-      allOrderListArray: dataSource,
-      allOrderListArrayShow: dataSource,
-    });
+    let result = null;
+    result = await getAllOrderList();
+    if (result.data.success) {
+      const myList = result.data.result;
+      this.setState({
+        allOrderListArray: myList,
+        allOrderListArrayShow: myList,
+      });
+    }
   }
 
   // #endregion get list ------------------------------
@@ -200,7 +204,6 @@ class OrderListPage extends React.Component {
   }
 
   btnOnSearch = async (value) => {
-    // console.log(value);
     const { allOrderListArray } = this.state;
     let tempArray = [];
     const compareAtt = ['id_num', 'name', 'user_name', 'endtime']; // 'user_id'
@@ -214,7 +217,6 @@ class OrderListPage extends React.Component {
             str = `${str}${allOrderListArray[i][compareAtt[j]]}`;
           }
         }
-        // console.log(str);
 
         if (str.toUpperCase().includes(value)) {
           tempArray.push(allOrderListArray[i]);
