@@ -865,13 +865,12 @@ class NewOrderForm extends React.Component {
     // return true → 建立者/row建立者且時間未大於endtime
     // return false →
     const { ViewType, myOrderRow, userid, myOrderHeader } = this.state;
-    const tempArray = myOrderRow;
-    const index = tempArray.findIndex((p) => p.id === id);
+    const index = myOrderRow.findIndex((p) => p.id === id);
     let result = false;
 
     if (ViewType === modeViewType.neworderView
       || userid === myOrderHeader.orderuserId
-      || (userid === tempArray[index].create_user
+      || (userid === myOrderRow[index].create_id
         && (new Date(`${myOrderHeader.orderEndDate} ${myOrderHeader.orderEndTime}:59`) > new Date()))) {
       result = true;
     }
