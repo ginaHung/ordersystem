@@ -7,13 +7,13 @@
 /* eslint-disable react/jsx-one-expression-per-line */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Tooltip, Table, Button, Divider, Input, message, Modal, Form } from 'antd';
+import { Tooltip, Table, Button, Divider, Input, message, Modal, Form, Spin } from 'antd';
 import { FileAddOutlined } from '@ant-design/icons';
 
 import { getMyOrder, getAllOrderList } from '../../service/API';
 import {
   LoginRouter, HeaderPageRouter, modeViewType,
-  defaultColumn, dataSource,
+  defaultColumn,
 } from '../../utils/define';
 import NewOrderForm from '../NewOrderForm/NewOrderForm';
 import './OrderListPage.less';
@@ -40,6 +40,7 @@ class OrderListPage extends React.Component {
     visibleModel: {
       codeModel: false,
       codeModelErrorStr: false,
+      loading: false,
     },
   }
 
@@ -64,6 +65,7 @@ class OrderListPage extends React.Component {
       history.push(LoginRouter);
     } else {
       try {
+        await this.fnSetModelVisible(true, 'loading');
         const tempView = view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view;
         const tempOrderId = await this.IsNullOrEmpty(sessionStorage.getItem('OrderId')) ? '' : sessionStorage.getItem('OrderId');
         this.setState({
@@ -78,26 +80,33 @@ class OrderListPage extends React.Component {
           await this.fnGetallList();
         }
       } catch (e) {
-        message.error(e.message);
+        message.error(`componentDidMount:${e.message}`);
       }
+      await this.fnSetModelVisible(false, 'loading');
     }
   }
 
   // props update
   componentWillReceiveProps = async (nextProps) => {
     const { view } = nextProps.match.params;
-    const tempView = view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view;
-    const tempOrderId = await this.IsNullOrEmpty(sessionStorage.getItem('OrderId')) ? '' : sessionStorage.getItem('OrderId');
-    this.setState({
-      ViewType: tempView,
-      myOrderId: tempView === modeViewType.orderlistView ? '' : tempOrderId,
-    });
+    try {
+      const tempView = view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view;
+      const tempOrderId = await this.IsNullOrEmpty(sessionStorage.getItem('OrderId')) ? '' : sessionStorage.getItem('OrderId');
+      this.setState({
+        ViewType: tempView,
+        myOrderId: tempView === modeViewType.orderlistView ? '' : tempOrderId,
+      });
 
-    const { ViewType } = this.state;
-    if (ViewType === modeViewType.orderlistView) {
-      await this.fnSetColumnHeader();
-      await this.fnGetmyList();
-      await this.fnGetallList();
+      const { ViewType } = this.state;
+      if (ViewType === modeViewType.orderlistView) {
+        await this.fnSetModelVisible(true, 'loading');
+        await this.fnSetColumnHeader();
+        await this.fnGetmyList();
+        await this.fnGetallList();
+        await this.fnSetModelVisible(false, 'loading');
+      }
+    } catch (err) {
+      message.error(`componentWillReceiveProps:${err.message}`);
     }
   }
 
@@ -157,10 +166,16 @@ class OrderListPage extends React.Component {
   }
 
   fnReload = async () => {
-    this.handlePage(HeaderPageRouter);
-    await this.handleSessionStorage('', '');
-    await this.fnGetmyList();
-    await this.fnGetallList();
+    try {
+      this.handlePage(HeaderPageRouter);
+      await this.fnSetModelVisible(true, 'loading');
+      await this.handleSessionStorage('', '');
+      await this.fnGetmyList();
+      await this.fnGetallList();
+      await this.fnSetModelVisible(false, 'loading');
+    } catch (err) {
+      message.error(`fnReload:${err.message}`);
+    }
   }
 
   fnGetmyList = async () => {
@@ -174,6 +189,8 @@ class OrderListPage extends React.Component {
       this.setState({
         myOrderListArray: myList,
       });
+    } else {
+      throw new Error(result.data.errorCode);
     }
   }
 
@@ -186,6 +203,8 @@ class OrderListPage extends React.Component {
         allOrderListArray: myList,
         allOrderListArrayShow: myList,
       });
+    } else {
+      throw new Error(result.data.errorCode);
     }
   }
 
@@ -207,26 +226,31 @@ class OrderListPage extends React.Component {
     const { allOrderListArray } = this.state;
     let tempArray = [];
     const compareAtt = ['id_num', 'name', 'user_name', 'endtime']; // 'user_id'
-    if (await this.IsNullOrEmpty(value)) {
-      tempArray = allOrderListArray;
-    } else {
-      for (let i = 0; i < allOrderListArray.length; i += 1) {
-        let str = '';
-        for (let j = 0; j < compareAtt.length; j += 1) {
-          if (allOrderListArray[i][compareAtt[j]] !== null) {
-            str = `${str}${allOrderListArray[i][compareAtt[j]]}`;
+
+    try {
+      if (await this.IsNullOrEmpty(value)) {
+        tempArray = allOrderListArray;
+      } else {
+        for (let i = 0; i < allOrderListArray.length; i += 1) {
+          let str = '';
+          for (let j = 0; j < compareAtt.length; j += 1) {
+            if (allOrderListArray[i][compareAtt[j]] !== null) {
+              str = `${str}${allOrderListArray[i][compareAtt[j]]}`;
+            }
+          }
+
+          if (str.toUpperCase().includes(value)) {
+            tempArray.push(allOrderListArray[i]);
           }
         }
-
-        if (str.toUpperCase().includes(value)) {
-          tempArray.push(allOrderListArray[i]);
-        }
       }
-    }
 
-    this.setState({
-      allOrderListArrayShow: tempArray,
-    });
+      this.setState({
+        allOrderListArrayShow: tempArray,
+      });
+    } catch (err) {
+      message.error(`btnOnSearch:${err.message}`);
+    }
   }
 
   btnJoin = async (record) => {
@@ -273,7 +297,9 @@ class OrderListPage extends React.Component {
 
     if (model === undefined) {
       tempModel = {
-        menuModel: false,
+        codeModel: false,
+        codeModelErrorStr: false,
+        loading: false,
       };
     } else {
       tempModel[model] = visible;
@@ -323,68 +349,70 @@ class OrderListPage extends React.Component {
     } = this.state;
     return (
       <div>
-        { ViewType === modeViewType.orderlistView ? (
+        {ViewType === modeViewType.orderlistView ? (
           <div>
-            <div className="panel-style" style={{ height: 300 }}>
-              <div style={{ marginTop: 5, width: '100%' }}>
-                <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
-                  我建立的訂單
-                </span>
-                <Tooltip placement="topLeft" title="建立訂單">
-                  <Button
-                    shape="circle"
-                    type="danger"
-                    icon={<FileAddOutlined />}
-                    size="large"
-                    style={{ marginLeft: 10 }}
-                    onClick={() => this.btnAddorEditOrderList('')}
+            <Spin spinning={visibleModel.loading}>
+              <div className="panel-style" style={{ height: 300 }}>
+                <div style={{ marginTop: 5, width: '100%' }}>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+                    我建立的訂單
+                  </span>
+                  <Tooltip placement="topLeft" title="建立訂單">
+                    <Button
+                      shape="circle"
+                      type="danger"
+                      icon={<FileAddOutlined />}
+                      size="large"
+                      style={{ marginLeft: 10 }}
+                      onClick={() => this.btnAddorEditOrderList('')}
+                    />
+                  </Tooltip>
+                </div>
+                <div style={{ marginTop: 5, width: '100%', height: 180 }}>
+                  <Table
+                    columns={myOrderListColumn}
+                    dataSource={myOrderListArray}
+                    bordered
+                    size="small"
+                    pagination={{
+                      defaultPageSize: 3,
+                    }}
+                    scroll={{ x: 'max-content' }}
+                    locale={{ emptyText: '快來揪團 > <' }}
                   />
-                </Tooltip>
+                </div>
               </div>
-              <div style={{ marginTop: 5, width: '100%', height: 180 }}>
-                <Table
-                  columns={myOrderListColumn}
-                  dataSource={myOrderListArray}
-                  bordered
-                  size="small"
-                  pagination={{
-                    defaultPageSize: 3,
-                  }}
-                  scroll={{ x: 'max-content' }}
-                  locale={{ emptyText: '快來揪團 > <' }}
-                />
-              </div>
-            </div>
-            <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
-            <div className="panel-style">
-              <div style={{ marginTop: 5, width: '100%' }}>
-                <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
-                  所有訂單
+              <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
+              <div className="panel-style">
+                <div style={{ marginTop: 5, width: '100%' }}>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+                    所有訂單
                 </span>
-                <Search
-                  style={{ width: 250, marginLeft: 10 }}
-                  allowClear="true"
-                  placeholder="input search text"
-                  onSearch={this.btnOnSearch}
-                />
+                  <Search
+                    style={{ width: 250, marginLeft: 10 }}
+                    allowClear="true"
+                    placeholder="input search text"
+                    onSearch={this.btnOnSearch}
+                  />
+                </div>
+                <div style={{ marginTop: 5, width: '100%' }}>
+                  <Table
+                    columns={allOrderListColumn}
+                    dataSource={allOrderListArrayShow}
+                    bordered
+                    size="small"
+                    pagination={{
+                      defaultPageSize: 10,
+                    }}
+                    scroll={{ x: 'max-content' }}
+                  />
+                </div>
               </div>
-              <div style={{ marginTop: 5, width: '100%' }}>
-                <Table
-                  columns={allOrderListColumn}
-                  dataSource={allOrderListArrayShow}
-                  bordered
-                  size="small"
-                  pagination={{
-                    defaultPageSize: 10,
-                  }}
-                  scroll={{ x: 'max-content' }}
-                />
-              </div>
-            </div>
+            </Spin>
           </div>
         ) : <div />}
 
-        { ViewType === modeViewType.neworderView ? (
+        {ViewType === modeViewType.neworderView ? (
           <NewOrderForm
             view={modeViewType.neworderView}
             orderid={myOrderId}
@@ -392,7 +420,7 @@ class OrderListPage extends React.Component {
           />
         ) : <div />}
 
-        { ViewType === modeViewType.joinView ? (
+        {ViewType === modeViewType.joinView ? (
           <NewOrderForm
             view={modeViewType.joinView}
             orderid={myOrderId}
