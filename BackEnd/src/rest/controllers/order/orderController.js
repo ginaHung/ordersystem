@@ -4,58 +4,6 @@ const postgres = require('../../models/postgres');
 const ResFormator = require('../../../utils/formator');
 const { object } = require('joi');
 
-const orderList = [
-  {
-    id: '1',
-    id_num: '20210425-1016',
-    name: 'Drink1',
-    user_id: '10910305',
-    user: 'Gina', 
-    description: '喝起來',
-    endtime: '2021/04/30 12:00',
-    invite_code: '123456',
-    menu_id: '',
-    class_1: '',
-    class_2: '',
-    class_3: '',
-    class_4: '',
-    class_5: '',
-  },
-  {
-    id: '2',
-    id_num: '20210426-1116',
-    name: 'Drink2',
-    user_id: '10910305',
-    user: 'Gina', 
-    description: '喝起來',
-    endtime: '2021/04/30 12:00',
-    invite_code: '123456',
-    menu_id: '',
-    class_1: '',
-    class_2: '',
-    class_3: '',
-    class_4: '',
-    class_5: '',
-  },
-];
-
-const orderItemList = [
-  {
-    id: '1',
-    orderID: '1',
-    user_name: 'Gina',
-    item_name: '珍奶',
-    class_1: '微',
-    class_2: '微',
-    class_3: '',
-    class_4: '',
-    class_5: '',
-    remark: 'HAHAHA',
-    price: '50',
-  },
-  
-];
-
 const { schema } = config;
 
 exports.getAllOrderList = async (ctx) => {
@@ -154,11 +102,10 @@ exports.getOrderData = async (ctx) => {
       ctx.body = new ResFormator(new Error('header_id is empty')).fullResponse;
     } else {
       const sqlCommand = `
-      select ${schema}.orderheader.name, ${schema}.orderheader.user_id, ${schema}.orderheader.user_name, ${schema}.orderheader.endtime, 
-        ${schema}.orderheader.invite_code, ${schema}.orderheader.describe, ${schema}.menu_pic.menu
-      from  ${schema}.orderheader
-      inner join ${schema}.menu_pic on ${schema}.menu_pic.id = ${body.header_id}
-      where ${schema}.orderheader.id = ${body.header_id};
+      select header.*, pic.menu
+      from  ${schema}.orderheader header
+      left join ${schema}.menu_pic pic on 'pic.id' = 'header.menu_id'
+      where header.id = ${body.header_id};
       `;
       console.log(sqlCommand);
       result = await postgres.query(sqlCommand);
@@ -180,9 +127,9 @@ exports.getOrderItem = async (ctx) => {
       ctx.body = new ResFormator(new Error('header_id is empty')).fullResponse;
     } else {
       const sqlCommand = `
-      select id, header_id, user_name, create_id, item_name, class_1, class_2, class_3, class_4, class_5
-      from ${schema}.orderitem
-      where ${schema}.orderitem.header_id = ${body.header_id};
+      select *
+      from ${schema}.orderitem item
+      where item.header_id = ${body.header_id};
       `;
       console.log(sqlCommand);
       result = await postgres.query(sqlCommand);
