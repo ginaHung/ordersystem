@@ -44,8 +44,6 @@ dev_build:
   stage: dev_build
   services:
     - docker:dind
-  variables:
-    DOCKER_TLS_CERTDIR: ""
   tags:
     - aws
     - m4-large
