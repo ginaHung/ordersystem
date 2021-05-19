@@ -9,9 +9,9 @@ const { schema } = config;
 exports.getAllOrderList = async (ctx) => {
   try {
     const sqlCommand = `
-    select id, id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id,
-      class_1, class_2, class_3, class_4, class_5
+    select *
     from  ${schema}.orderheader
+    order by id_num;
     `;
     console.log(sqlCommand);
     result = await postgres.query(sqlCommand);
@@ -31,10 +31,10 @@ exports.getMyOrder = async (ctx) => {
       ctx.body = new ResFormator(new Error('user_id is empty')).fullResponse;
     } else {
       const sqlCommand = `
-      select id, id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id,
-        class_1, class_2, class_3, class_4, class_5
+      select *
       from  ${schema}.orderheader
-      where user_id = '${body.user_id}'`;
+      where user_id = '${body.user_id}'
+      order by id_num;`;
       console.log(sqlCommand);
       result = await postgres.query(sqlCommand);
       if (result.success === false) {
@@ -129,7 +129,8 @@ exports.getOrderItem = async (ctx) => {
       const sqlCommand = `
       select *
       from ${schema}.orderitem item
-      where item.header_id = '${body.header_id}';
+      where item.header_id = '${body.header_id}'
+      order by id;
       `;
       console.log(sqlCommand);
       result = await postgres.query(sqlCommand);
