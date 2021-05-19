@@ -66,7 +66,7 @@ const router = new Router();
 
  * @apiSuccessExample {json} Request Example
  * {
- *   header_id: '1'
+ *   header_id: 1
  *  
  * }
  */
@@ -82,7 +82,7 @@ const router = new Router();
 
  * @apiSuccessExample {json} Request Example
  * {
- *   header_id: '1'
+ *   header_id: 1
  *  
  * }
  */
