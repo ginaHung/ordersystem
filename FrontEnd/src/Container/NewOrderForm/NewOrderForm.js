@@ -9,14 +9,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import {
-  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber, Popconfirm, Modal,
+  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber, Popconfirm, Modal, Spin,
 } from 'antd';
 import {
   PlusOutlined, DoubleRightOutlined, DoubleLeftOutlined, QuestionCircleOutlined, PushpinTwoTone, DeleteOutlined,
   EyeOutlined, MehOutlined, MinusCircleOutlined, CheckCircleOutlined, EditOutlined, LikeOutlined,
 } from '@ant-design/icons';
 
-// import { verify } from '../../service/API';
+import { SaveMyOrder, SaveOrderRow, getOrderData, getOrderItem } from '../../service/API';
 import {
   LoginRouter, HeaderPageRouter, modeViewType,
   NewOrderdata, dataSource,
@@ -37,6 +37,7 @@ class NewOrderForm extends React.Component {
       menuModel: false,
       saveNotifyModal: false,
       tempStr: '',
+      loading: false,
     },
     orderId: this.props.orderid,
     myOrderHeader: {
@@ -44,13 +45,13 @@ class NewOrderForm extends React.Component {
       orderName: '',
       orderuserId: sessionStorage.getItem('emplid'),
       orderuserName: sessionStorage.getItem('emplidname'),
-      orderDiscribe: '',
+      orderDescribe: '',
       orderEndDate: '',
       orderEndTime: '',
       orderCode: '',
       orderMenu: '',
       OrderClass: ['', '', '', '', ''],
-      orderDiscribeArr: [],
+      orderDescribeArr: [],
     },
     myOrderRow: [],
     // myOrderRow: [{
@@ -83,10 +84,9 @@ class NewOrderForm extends React.Component {
   // componentWillMount = () => { }
 
   componentDidMount = async () => {
-    const { userid, ViewType, orderId, myOrderHeader, myOrderRow } = this.state;
+    const { userid, ViewType, orderId, myOrderHeader } = this.state;
     const sessionRoute = `${sessionStorage.getItem('View')}/${sessionStorage.getItem('OrderId')}`;
-    const dataHeaderResult = myOrderHeader;
-    let datarowResult = myOrderRow;
+
 
     // console.log(`sessionRoute=${sessionRoute},state=${ViewType}/${orderId}`);
     if (await this.IsNullOrEmpty(userid)) {
@@ -96,8 +96,10 @@ class NewOrderForm extends React.Component {
       await this.fnReload();
     } else {
       try {
-        // #region init
+        await this.fnSetModelVisible(true, 'loading');
+        // init
         if (await this.IsNullOrEmpty(orderId)) { // add
+          const dataHeaderResult = myOrderHeader;
           dataHeaderResult.orderNum = await this.createOrderNum();
           this.setState({
             orderId: '',
@@ -105,43 +107,18 @@ class NewOrderForm extends React.Component {
             myOrderHeader: dataHeaderResult,
           });
         } else { // edit, view
-          const tempheader = dataSource[orderId - 1];
-          datarowResult = NewOrderdata;
-
-          dataHeaderResult.orderNum = tempheader.id_num;
-          dataHeaderResult.orderName = tempheader.name;
-          dataHeaderResult.orderuserId = tempheader.user_id;
-          dataHeaderResult.orderuserName = tempheader.user_name;
-          dataHeaderResult.orderDiscribe = tempheader.dscribe;
-          dataHeaderResult.orderEndDate = tempheader.endtime.substr(0, 10);
-          dataHeaderResult.orderEndTime = tempheader.endtime.substr(11);
-          dataHeaderResult.orderCode = tempheader.invite_code;
-          dataHeaderResult.orderMenu = tempheader.orderMenu;
-          dataHeaderResult.OrderClass = [tempheader.class_1, tempheader.class_2, tempheader.class_3, tempheader.class_4, tempheader.class_5];
-          dataHeaderResult.orderDiscribeArr = await this.handleDiscribe();
-
-          let tempvisibleClassNum = 0;
-          for (let i = 0; i < dataHeaderResult.OrderClass.length; i += 1) {
-            if (dataHeaderResult.OrderClass[i] || dataHeaderResult.OrderClass[i] !== '') {
-              tempvisibleClassNum = i + 1;
-            }
-          }
-
           this.setState({
             ViewType: ViewType === '' || Object.values(modeViewType).indexOf(ViewType) < 0 ? modeViewType.joinView : ViewType,
-            myOrderHeader: dataHeaderResult,
-            myOrderRow: datarowResult,
-            visibleClass: tempvisibleClassNum,
           });
+          await this.fnGetOrderList();
         }
-        // #endregion init
 
-        // #region table header
+        // table header
         await this.fnSetColumnHeader();
-        // #endregion table header
       } catch (e) {
         message.error(e.message);
       }
+      await this.fnSetModelVisible(false, 'loading');
     }
   }
 
@@ -179,9 +156,7 @@ class NewOrderForm extends React.Component {
     return tempNum;
   }
 
-  handleDiscribe = async () => {
-    const { myOrderHeader } = this.state;
-    const str = myOrderHeader.orderDiscribe;
+  handleDescribe = async (str) => {
     const brChar = ['\r', '\n'];
     const htmlArr = [];
     let startId = 0;
@@ -198,6 +173,57 @@ class NewOrderForm extends React.Component {
       message.error(err.message);
     }
     return htmlArr;
+  }
+
+  fnGetOrderList = async () => {
+    const { orderId } = this.state;
+    const dataHeaderResult = {};
+    let result = null;
+    let data = null;
+    let tempheader;
+    let dataRowResult;
+
+    data = { header_id: orderId };
+    result = await getOrderData(data);
+    if (!result.data.success) {
+      throw new Error(result.data.errorCode);
+    } else {
+      // eslint-disable-next-line prefer-destructuring
+      tempheader = result.data.result[0];
+    }
+
+    data = { header_id: orderId };
+    result = await getOrderItem(data);
+    if (!result.data.success) {
+      throw new Error(result.data.errorCode);
+    } else {
+      dataRowResult = result.data.result;
+    }
+
+    dataHeaderResult.orderNum = tempheader.id_num;
+    dataHeaderResult.orderName = tempheader.name;
+    dataHeaderResult.orderuserId = tempheader.user_id;
+    dataHeaderResult.orderuserName = tempheader.user_name;
+    dataHeaderResult.orderDescribe = tempheader.describe;
+    dataHeaderResult.orderEndDate = tempheader.endtime.substring(0, 10);
+    dataHeaderResult.orderEndTime = tempheader.endtime.substring(11);
+    dataHeaderResult.orderCode = tempheader.invite_code;
+    dataHeaderResult.orderMenu = tempheader.orderMenu;
+    dataHeaderResult.OrderClass = [tempheader.class_1, tempheader.class_2, tempheader.class_3, tempheader.class_4, tempheader.class_5];
+    dataHeaderResult.orderDescribeArr = await this.handleDescribe(tempheader.describe);
+
+    let tempvisibleClassNum = 0;
+    for (let i = 0; i < dataHeaderResult.OrderClass.length; i += 1) {
+      if (dataHeaderResult.OrderClass[i] || dataHeaderResult.OrderClass[i] !== '') {
+        tempvisibleClassNum = i + 1;
+      }
+    }
+
+    this.setState({
+      myOrderHeader: dataHeaderResult,
+      myOrderRow: dataRowResult,
+      visibleClass: tempvisibleClassNum,
+    });
   }
 
   fnSetColumnHeader = async (flagAdd) => {
@@ -565,12 +591,6 @@ class NewOrderForm extends React.Component {
     });
   }
 
-  // fnGetmyList = async () => {
-  //   // this.setState({
-  //   //   myOrderListArray: dataSource,
-  //   // });
-  // }
-
   // #endregion get list ----------------------------------
 
 
@@ -632,7 +652,7 @@ class NewOrderForm extends React.Component {
     });
   }
 
-  fnSetModelVisible = (visible, model) => {
+  fnSetModelVisible = async (visible, model) => {
     const { visibleModel } = this.state;
     let tempModel = visibleModel;
 
@@ -641,6 +661,7 @@ class NewOrderForm extends React.Component {
         menuModel: false,
         saveNotifyModal: false,
         tempStr: '',
+        loading: false,
       };
     } else {
       tempModel[model] = visible;
@@ -704,8 +725,8 @@ class NewOrderForm extends React.Component {
       message.warning('部分內容不可為空');
     } else {
       tempArray[index].type = state;
+      this.setState({ myOrderRow: tempArray });
     }
-    this.setState({ myOrderRow: tempArray });
   }
 
   btndelOrderRow = async (id) => {
@@ -733,16 +754,74 @@ class NewOrderForm extends React.Component {
   }
 
   btnSaveOrder = async () => {
-    const { visibleModel, myOrderHeader, myOrderRow, mydelOrderRow } = this.state;
+    const { visibleModel, orderId, myOrderHeader, myOrderRow, mydelOrderRow } = this.state;
     const tempVisibleModal = visibleModel;
-    tempVisibleModal.tempStr = '成功';
+    tempVisibleModal.tempStr = '失敗';
+    let apiResult = null;
+    try {
+      await this.fnSetModelVisible(true, 'loading');
 
-    this.setState({
-      visibleModel: tempVisibleModal,
-      // myOrderRow: myOrderRow.filter((item) => item.id !== id),
-      // mydelOrderRow: tempdelArray,
-    });
+      // #region header
+      let data = {
+        id: orderId,
+        id_num: myOrderHeader.orderNum,
+        name: myOrderHeader.orderName,
+        user_id: myOrderHeader.orderuserId,
+        user_name: myOrderHeader.orderuserName,
+        describe: myOrderHeader.orderDescribe,
+        endtime: `${myOrderHeader.orderEndDate} ${myOrderHeader.orderEndTime}`,
+        invite_code: myOrderHeader.orderCode,
+        menu: myOrderHeader.orderMenu,
+        class_1: myOrderHeader.OrderClass[0],
+        class_2: myOrderHeader.OrderClass[1],
+        class_3: myOrderHeader.OrderClass[2],
+        class_4: myOrderHeader.OrderClass[3],
+        class_5: myOrderHeader.OrderClass[4],
+      };
+
+      apiResult = await SaveMyOrder(data);
+      if (apiResult.data.success !== true) {
+        throw new Error(apiResult.data.errorCode);
+      }
+      // #endregion header
+
+      // #region rows
+      const tempId = apiResult.data.result.order_id;
+      const addRow = [];
+      const editRow = [];
+      for (let i = 0; i < myOrderRow.length; i += 1) {
+        if (myOrderRow[i].id.indexOf('+') >= 0) {
+          addRow.push(myOrderRow[i]);
+        } else if (myOrderRow[i].type !== undefined) {
+          editRow.push(myOrderRow[i]);
+        }
+      }
+      data = {
+        id: tempId,
+        addRow,
+        editRow,
+        mydelOrderRow,
+      };
+      apiResult = await SaveOrderRow(data);
+      if (apiResult.data.success !== true) {
+        throw new Error(apiResult.data.errorCode);
+      }
+      // #endregion rows
+
+      tempVisibleModal.tempStr = '成功';
+      this.setState({
+        orderId: tempId,
+        visibleModel: tempVisibleModal,
+      });
+      await this.fnGetOrderList();
+    } catch (err) {
+      this.setState({
+        visibleModel: tempVisibleModal,
+      });
+      message.error(err.message);
+    }
     this.fnSetModelVisible(true, 'saveNotifyModal');
+    // await this.fnSetModelVisible(false, 'loading');
   }
 
   btnSaveOrderRow = async () => {
@@ -837,279 +916,280 @@ class NewOrderForm extends React.Component {
     } = this.state;
     return (
       <div>
-        <div className="orderheader">
+        <Spin spinning={visibleModel.loading}>
+          <div className="orderheader">
 
-          <div style={{ marginTop: 5, width: '100%' }}>
-            {this.fnIsViewTypeMyOrder() ? (
-              <div>
-                <span style={{ color: 'red', fontSize: '28px', fontWeight: 'bold' }}>*</span>
-                <Input
-                  size="large"
-                  className="input-buttonborder"
-                  style={{
-                    width: 250, fontSize: '20px', fontWeight: 'bold', marginLeft: 5, backgroundColor: 'inherit',
-                  }}
-                  value={myOrderHeader.orderName}
-                  placeholder="輸入訂單名稱"
-                  onChange={(e) => this.changeOrderHeader(e, 'orderName')}
-                />
-                <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
-
-                <Popconfirm
-                  title="訂單完成後將會刪除紀錄，確定要完成嗎?"
-                  icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                  onConfirm={() => this.btnCompleteOrder()}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>完成訂單</Button>
-                </Popconfirm>
-
-                <Popconfirm
-                  title="可能有未儲存的內容，確定要離開嗎?"
-                  icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                  onConfirm={() => this.fnReload()}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>離開</Button>
-                </Popconfirm>
-
-                <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.btnSaveOrder()}>儲存</Button>
-              </div>
-            ) : <div />}
-            {!this.fnIsViewTypeMyOrder() && this.fnIsCanJoin() ? (
-              <div>
-                <PushpinTwoTone size="large" style={{ fontSize: 28 }} twoToneColor="#e88b3f" />
-                <span style={{ fontSize: '26px', fontWeight: 'bold', marginLeft: 5 }}>{myOrderHeader.orderName}</span>
-                <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
-                <Popconfirm
-                  title="可能有未儲存的內容，確定要離開嗎?"
-                  icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                  onConfirm={() => this.fnReload()}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>離開</Button>
-                </Popconfirm>
-                <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.btnSaveOrderRow()}>儲存</Button>
-              </div>
-            ) : <div />}
-            {!this.fnIsViewTypeMyOrder() && !this.fnIsCanJoin() ? (
-              <div>
-                <PushpinTwoTone size="large" style={{ fontSize: 28 }} twoToneColor="#e88b3f" />
-                <span style={{ fontSize: '26px', fontWeight: 'bold', marginLeft: 5 }}>{myOrderHeader.orderName}</span>
-                <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
-                <Button
-                  type="dashed"
-                  size="large"
-                  style={{ marginRight: 10, float: 'right' }}
-                  onClick={() => this.fnReload()}
-                >
-                  離開
-                </Button>
-              </div>
-            ) : <div />}
-          </div>
-
-          <div style={{ marginTop: 10, width: '100%' }}>
-            <table className="table_container">
-              <tr>
-                <td className="table-col1">建立者:</td>
-                <td className="table-col2">
-                  <span style={{ fontSize: '16px', marginLeft: 5 }}>{myOrderHeader.orderuserId} - {myOrderHeader.orderuserName}</span>
-                </td>
-                <td>
-                  <span>Menu</span>
-                  <EyeOutlined
+            <div style={{ marginTop: 5, width: '100%' }}>
+              {this.fnIsViewTypeMyOrder() ? (
+                <div>
+                  <span style={{ color: 'red', fontSize: '28px', fontWeight: 'bold' }}>*</span>
+                  <Input
+                    size="large"
+                    className="input-buttonborder"
                     style={{
-                      color: '#e88b3f',
-                      fontSize: '22px',
-                      marginLeft: 15,
-                      cursor: myOrderHeader.orderMenu ? 'pointer' : 'not-allowed',
+                      width: 250, fontSize: '20px', fontWeight: 'bold', marginLeft: 5, backgroundColor: 'inherit',
                     }}
-                    onClick={myOrderHeader.orderMenu ? () => this.fnSetModelVisible(true, 'menuModel') : null}
+                    value={myOrderHeader.orderName}
+                    placeholder="輸入訂單名稱"
+                    onChange={(e) => this.changeOrderHeader(e, 'orderName')}
                   />
-                  {this.fnIsViewTypeMyOrder() ? (
-                    <DeleteOutlined
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
+
+                  <Popconfirm
+                    title="訂單完成後將會刪除紀錄，確定要完成嗎?"
+                    icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                    onConfirm={() => this.btnCompleteOrder()}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>完成訂單</Button>
+                  </Popconfirm>
+
+                  <Popconfirm
+                    title="可能有未儲存的內容，確定要離開嗎?"
+                    icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                    onConfirm={() => this.fnReload()}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>離開</Button>
+                  </Popconfirm>
+
+                  <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.btnSaveOrder()}>儲存</Button>
+                </div>
+              ) : <div />}
+              {!this.fnIsViewTypeMyOrder() && this.fnIsCanJoin() ? (
+                <div>
+                  <PushpinTwoTone size="large" style={{ fontSize: 28 }} twoToneColor="#e88b3f" />
+                  <span style={{ fontSize: '26px', fontWeight: 'bold', marginLeft: 5 }}>{myOrderHeader.orderName}</span>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
+                  <Popconfirm
+                    title="可能有未儲存的內容，確定要離開嗎?"
+                    icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                    onConfirm={() => this.fnReload()}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }}>離開</Button>
+                  </Popconfirm>
+                  <Button type="dashed" size="large" style={{ marginRight: 10, float: 'right' }} onClick={() => this.btnSaveOrderRow()}>儲存</Button>
+                </div>
+              ) : <div />}
+              {!this.fnIsViewTypeMyOrder() && !this.fnIsCanJoin() ? (
+                <div>
+                  <PushpinTwoTone size="large" style={{ fontSize: 28 }} twoToneColor="#e88b3f" />
+                  <span style={{ fontSize: '26px', fontWeight: 'bold', marginLeft: 5 }}>{myOrderHeader.orderName}</span>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
+                  <Button
+                    type="dashed"
+                    size="large"
+                    style={{ marginRight: 10, float: 'right' }}
+                    onClick={() => this.fnReload()}
+                  >
+                    離開
+                </Button>
+                </div>
+              ) : <div />}
+            </div>
+
+            <div style={{ marginTop: 10, width: '100%' }}>
+              <table className="table_container">
+                <tr>
+                  <td className="table-col1">建立者:</td>
+                  <td className="table-col2">
+                    <span style={{ fontSize: '16px', marginLeft: 5 }}>{myOrderHeader.orderuserId} - {myOrderHeader.orderuserName}</span>
+                  </td>
+                  <td>
+                    <span>Menu</span>
+                    <EyeOutlined
                       style={{
                         color: '#e88b3f',
                         fontSize: '22px',
                         marginLeft: 15,
                         cursor: myOrderHeader.orderMenu ? 'pointer' : 'not-allowed',
                       }}
-                      onClick={() => this.btndeleteImgurl()}
+                      onClick={myOrderHeader.orderMenu ? () => this.fnSetModelVisible(true, 'menuModel') : null}
                     />
-                  ) : <div />}
-                </td>
-              </tr>
-              <tr>
-                <td className="table-col1">
-                  {this.fnIsViewTypeMyOrder() ? (
-                    <span style={{ color: 'red', fontSize: '20px' }}>*</span>
-                  ) : <div />}
+                    {this.fnIsViewTypeMyOrder() ? (
+                      <DeleteOutlined
+                        style={{
+                          color: '#e88b3f',
+                          fontSize: '22px',
+                          marginLeft: 15,
+                          cursor: myOrderHeader.orderMenu ? 'pointer' : 'not-allowed',
+                        }}
+                        onClick={() => this.btndeleteImgurl()}
+                      />
+                    ) : <div />}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="table-col1">
+                    {this.fnIsViewTypeMyOrder() ? (
+                      <span style={{ color: 'red', fontSize: '20px' }}>*</span>
+                    ) : <div />}
                   結單時間:
                 </td>
-                <td className="table-col2">
-                  {this.fnIsViewTypeMyOrder() ? (
-                    <div>
-                      <DatePicker
-                        style={{ width: '150px', marginLeft: 5, backgroundColor: 'inherit' }}
-                        value={(myOrderHeader.orderEndDate === '') ? '' : moment(myOrderHeader.orderEndDate, 'YYYY/MM/DD')}
-                        format="YYYY/MM/DD"
-                        disabledDate={this.disabledDate}
-                        onChange={this.changetxtorderEndDate}
-                      />
-                      <TimePicker
-                        style={{ width: '150px', marginLeft: 5, backgroundColor: 'inherit' }}
-                        value={(myOrderHeader.orderEndTime === '') ? '' : moment(myOrderHeader.orderEndTime, 'HH:mm')}
-                        format="HH:mm"
-                        minuteStep={15}
-                        onChange={this.changetxtorderEndTime}
-                      />
-                    </div>
-                  ) : (
-                    <div>
-                      <span style={{ fontSize: '16px', marginLeft: 5 }}>{myOrderHeader.orderEndDate} {myOrderHeader.orderEndTime}</span>
-                    </div>
-                  )}
-                </td>
-                <td rowSpan="3" style={{ verticalAlign: 'top' }}>
-                  {this.fnIsViewTypeMyOrder() ? (
-                    <Upload
-                      showUploadList={false}
-                      beforeUpload={this.imgbeforeUpload}
-                      onChange={this.btnchangeImgurl}
-                    >
-                      <Button className="uploadbtn">
+                  <td className="table-col2">
+                    {this.fnIsViewTypeMyOrder() ? (
+                      <div>
+                        <DatePicker
+                          style={{ width: '150px', marginLeft: 5, backgroundColor: 'inherit' }}
+                          value={(myOrderHeader.orderEndDate === '') ? '' : moment(myOrderHeader.orderEndDate, 'YYYY/MM/DD')}
+                          format="YYYY/MM/DD"
+                          disabledDate={this.disabledDate}
+                          onChange={this.changetxtorderEndDate}
+                        />
+                        <TimePicker
+                          style={{ width: '150px', marginLeft: 5, backgroundColor: 'inherit' }}
+                          value={(myOrderHeader.orderEndTime === '') ? '' : moment(myOrderHeader.orderEndTime, 'HH:mm')}
+                          format="HH:mm"
+                          minuteStep={15}
+                          onChange={this.changetxtorderEndTime}
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <span style={{ fontSize: '16px', marginLeft: 5 }}>{myOrderHeader.orderEndDate} {myOrderHeader.orderEndTime}</span>
+                      </div>
+                    )}
+                  </td>
+                  <td rowSpan="3" style={{ verticalAlign: 'top' }}>
+                    {this.fnIsViewTypeMyOrder() ? (
+                      <Upload
+                        showUploadList={false}
+                        beforeUpload={this.imgbeforeUpload}
+                        onChange={this.btnchangeImgurl}
+                      >
+                        <Button className="uploadbtn">
+                          {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%', height: '100%' }} />
+                            : (
+                              <div style={{ color: '#b3aca6' }}>
+                                <PlusOutlined style={{ fontSize: 16 }} />
+                                <div style={{ marginTop: 8, fontSize: 16 }}>Upload</div>
+                              </div>
+                            )}
+                        </Button>
+                      </Upload>
+                    ) : (
+                      <div className="uploadbtn">
                         {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%', height: '100%' }} />
                           : (
-                            <div style={{ color: '#b3aca6' }}>
-                              <PlusOutlined style={{ fontSize: 16 }} />
-                              <div style={{ marginTop: 8, fontSize: 16 }}>Upload</div>
+                            <div style={{ width: '100%', height: '100%', textAlign: 'center', marginTop: '80px', color: '#b3aca6' }}>
+                              <MehOutlined style={{ fontSize: 32 }} />
+                              <div style={{ marginTop: 8, fontSize: 16 }}>no image</div>
                             </div>
                           )}
-                      </Button>
-                    </Upload>
-                  ) : (
-                    <div className="uploadbtn">
-                      {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%', height: '100%' }} />
-                        : (
-                          <div style={{ width: '100%', height: '100%', textAlign: 'center', marginTop: '80px', color: '#b3aca6' }}>
-                            <MehOutlined style={{ fontSize: 32 }} />
-                            <div style={{ marginTop: 8, fontSize: 16 }}>no image</div>
-                          </div>
-                        )}
-                    </div>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td className="table-col1">
-                  {this.fnIsViewTypeMyOrder() ? (
-                    <span className="input-buttonborder" style={{ color: 'red', fontSize: '20px' }}>*</span>
-                  ) : <div />}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="table-col1">
+                    {this.fnIsViewTypeMyOrder() ? (
+                      <span className="input-buttonborder" style={{ color: 'red', fontSize: '20px' }}>*</span>
+                    ) : <div />}
                   邀請碼:
                 </td>
-                <td className="table-col2">
-                  {this.fnIsViewTypeMyOrder() ? (
-                    <Input
-                      style={{ width: '90%', marginLeft: 5, backgroundColor: 'inherit' }}
-                      allowClear
-                      value={myOrderHeader.orderCode}
-                      placeholder="請輸入邀請碼"
-                      onChange={(e) => this.changeOrderHeader(e, 'orderCode')}
-                    />
-                  ) : (
-                    <div>
-                      <span style={{ fontSize: '16px', marginLeft: 5, color: '#9e958d' }}>**********</span>
-                    </div>
-                  )}
-                </td>
-              </tr>
-              <tr style={{ height: '200px' }}>
-                <td className="table-col1" style={{ verticalAlign: 'top' }}>描述:</td>
-                <td style={{ verticalAlign: 'top' }}>
-                  {this.fnIsViewTypeMyOrder() ? (
-                    <TextArea
-                      style={{ width: '90%', marginLeft: 5, backgroundColor: 'inherit' }}
-                      placeholder="url 請單獨一行"
-                      value={myOrderHeader.orderDiscribe}
-                      onScroll
-                      rows={7}
-                      // showCount
-                      maxLength={200}
-                      onChange={(e) => this.changeOrderHeader(e, 'orderDiscribe')}
-                    />
-                  ) : (
-                    <div className="discribetxtbox">
-                      {myOrderHeader.orderDiscribeArr.map((item) => {
-                        return (
-                          <div>
-                            {/* eslint-disable-next-line no-nested-ternary */}
-                            { item.str.indexOf('https://') >= 0 || item.str.indexOf('http://') >= 0 ? (
-                              <a href={item.str.trim()} target="blank">{item.str}</a>
-                            ) : item.str.trim() === '' ? (<br />) : item.str}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    // <div className="discribetxtbox">{myOrderHeader.orderDiscribe}</div>
-                  )
-                  }
-                </td>
-              </tr>
-            </table>
+                  <td className="table-col2">
+                    {this.fnIsViewTypeMyOrder() ? (
+                      <Input
+                        style={{ width: '90%', marginLeft: 5, backgroundColor: 'inherit' }}
+                        allowClear
+                        value={myOrderHeader.orderCode}
+                        placeholder="請輸入邀請碼"
+                        onChange={(e) => this.changeOrderHeader(e, 'orderCode')}
+                      />
+                    ) : (
+                      <div>
+                        <span style={{ fontSize: '16px', marginLeft: 5, color: '#9e958d' }}>**********</span>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+                <tr style={{ height: '200px' }}>
+                  <td className="table-col1" style={{ verticalAlign: 'top' }}>描述:</td>
+                  <td style={{ verticalAlign: 'top' }}>
+                    {this.fnIsViewTypeMyOrder() ? (
+                      <TextArea
+                        style={{ width: '90%', marginLeft: 5, backgroundColor: 'inherit' }}
+                        placeholder="url 請單獨一行"
+                        value={myOrderHeader.orderDescribe}
+                        onScroll
+                        rows={7}
+                        // showCount
+                        maxLength={200}
+                        onChange={(e) => this.changeOrderHeader(e, 'orderDescribe')}
+                      />
+                    ) : (
+                      <div className="describetxtbox">
+                        {myOrderHeader.orderDescribeArr.map((item) => {
+                          return (
+                            <div>
+                              {/* eslint-disable-next-line no-nested-ternary */}
+                              { item.str.indexOf('https://') >= 0 || item.str.indexOf('http://') >= 0 ? (
+                                <a href={item.str.trim()} target="blank">{item.str}</a>
+                              ) : item.str.trim() === '' ? (<br />) : item.str}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      // <div className="describetxtbox">{myOrderHeader.orderDescribe}</div>
+                    )
+                    }
+                  </td>
+                </tr>
+              </table>
+            </div>
           </div>
-        </div>
 
-        <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
+          <Divider style={{ width: '60%', backgroundColor: '#92a69f', marginTop: 0 }} />
 
-        <div className="orderbody">
-          <div style={{ marginTop: 5, width: '100%' }}>
-            {this.fnIsViewTypeMyOrder() ? (
-              <div>
+          <div className="orderbody">
+            <div style={{ marginTop: 5, width: '100%' }}>
+              {this.fnIsViewTypeMyOrder() ? (
+                <div>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
+                    訂單
+                </span>
+                  <Tooltip placement="topLeft" title="刪除欄位">
+                    <DoubleLeftOutlined
+                      style={{ marginLeft: 15, verticalAlign: 'text-top' }}
+                      onClick={() => this.fnSetColumnHeader(false)}
+                    />
+                  </Tooltip>
+                  <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
+                    <DoubleRightOutlined
+                      style={{ marginLeft: 8, verticalAlign: 'text-top' }}
+                      onClick={() => this.fnSetColumnHeader(true)}
+                    />
+                  </Tooltip>
+                </div>
+              ) : (
                 <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
                   訂單
                 </span>
-                <Tooltip placement="topLeft" title="刪除欄位">
-                  <DoubleLeftOutlined
-                    style={{ marginLeft: 15, verticalAlign: 'text-top' }}
-                    onClick={() => this.fnSetColumnHeader(false)}
-                  />
-                </Tooltip>
-                <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
-                  <DoubleRightOutlined
-                    style={{ marginLeft: 8, verticalAlign: 'text-top' }}
-                    onClick={() => this.fnSetColumnHeader(true)}
-                  />
-                </Tooltip>
-              </div>
-            ) : (
-              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
-                訂單
-              </span>
-            )}
+              )}
+            </div>
+            <div style={{ marginTop: 5, width: '100%', height: '100%' }}>
+              <Table
+                columns={myOrderColumn}
+                dataSource={myOrderRow}
+                bordered
+                size="small"
+                locale={{ emptyText: '點選左上角按鈕來訂飲料 > <' }}
+                pagination={{
+                  total: myOrderRow.length,
+                  pageSize: myOrderRow.length,
+                  hideOnSinglePage: true,
+                }}
+                scroll={{ x: 'max-content' }}
+              />
+            </div>
           </div>
-          <div style={{ marginTop: 5, width: '100%', height: '100%' }}>
-            <Table
-              columns={myOrderColumn}
-              dataSource={myOrderRow}
-              bordered
-              size="small"
-              locale={{ emptyText: '點選左上角按鈕來訂飲料 > <' }}
-              pagination={{
-                total: myOrderRow.length,
-                pageSize: myOrderRow.length,
-                hideOnSinglePage: true,
-              }}
-              scroll={{ x: 'max-content' }}
-            />
-          </div>
-        </div>
 
-        <div style={{ height: '25px' }} />
-
+          <div style={{ height: '25px' }} />
+        </Spin>
         <Modal
           visible={visibleModel.menuModel}
           title="Menu"
@@ -1129,9 +1209,9 @@ class NewOrderForm extends React.Component {
           // title="通知"
           width={300}
           // centered
-          onCancel={() => this.fnSetModelVisible(false, 'saveNotifyModal')}
+          onCancel={() => this.fnSetModelVisible(false)}
           footer={(
-            <Button onClick={() => this.fnSetModelVisible(false, 'saveNotifyModal')}>
+            <Button onClick={() => this.fnSetModelVisible(false)}>
               OK
             </Button>
           )}

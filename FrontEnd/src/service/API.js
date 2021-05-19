@@ -7,7 +7,13 @@ export const logout = (data) => HttpService.post('azure/logout', data);
 export const getMyOrder = (data) => HttpService.post('order/getMyOrder', data);
 export const getAllOrderList = (data) => HttpService.post('order/getAllOrderList', data);
 
-// export const getMyOrder = (data) => HttpService.post('order/getOrderList', data);
+export const getOrderData = (data) => HttpService.post('order/getOrderData', data);
+export const getOrderItem = (data) => HttpService.post('order/getOrderItem', data);
+
+
+
+export const SaveMyOrder = (data) => HttpService.post('order/getOrderList', data);
+export const SaveOrderRow = (data) => HttpService.post('order/getOrderList', data);
 // export const saveMyOrder = (data) => HttpService.post('order/getOrderList', data);
 // export const saveMyOrderRow = (data) => HttpService.post('order/getOrderList', data);
 // export const deleteMyOrderRow = (data) => HttpService.post('order/getOrderList', data);
