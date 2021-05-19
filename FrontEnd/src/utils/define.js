@@ -301,7 +301,6 @@ const dataSource = [
     class_5: '',
   },
 ];
-const dataSource2 = [];
 
 export {
   API_URL, AAD_CLIENT_ID,
@@ -309,7 +308,4 @@ export {
   LoginRouter, HeaderPageRouter,
   modeViewType,
   defaultColumn,
-
-  NewOrderdata,
-  dataSource,
 };

@@ -11,10 +11,7 @@ import { Tooltip, Table, Button, Divider, Input, message, Modal, Form, Spin } fr
 import { FileAddOutlined } from '@ant-design/icons';
 
 import { getMyOrder, getAllOrderList } from '../../service/API';
-import {
-  LoginRouter, HeaderPageRouter, modeViewType,
-  defaultColumn,
-} from '../../utils/define';
+import { LoginRouter, HeaderPageRouter, modeViewType, defaultColumn } from '../../utils/define';
 import NewOrderForm from '../NewOrderForm/NewOrderForm';
 import './OrderListPage.less';
 
@@ -53,9 +50,6 @@ class OrderListPage extends React.Component {
 
   // #region mount ------------------------------------
 
-  // componentWillMount = () => {
-  // }
-
   componentDidMount = async () => {
     const { userid } = this.state;
     const { view } = this.props.match.params;
@@ -73,8 +67,7 @@ class OrderListPage extends React.Component {
           myOrderId: tempView === modeViewType.orderlistView ? '' : tempOrderId,
         });
 
-        const { ViewType } = this.state;
-        if (ViewType === modeViewType.orderlistView) {
+        if (tempView === modeViewType.orderlistView) {
           await this.fnSetColumnHeader();
           await this.fnGetmyList();
           await this.fnGetallList();
@@ -90,6 +83,7 @@ class OrderListPage extends React.Component {
   componentWillReceiveProps = async (nextProps) => {
     const { view } = nextProps.match.params;
     try {
+      await this.fnSetModelVisible(true, 'loading');
       const tempView = view === undefined || Object.values(modeViewType).indexOf(view) < 0 ? modeViewType.orderlistView : view;
       const tempOrderId = await this.IsNullOrEmpty(sessionStorage.getItem('OrderId')) ? '' : sessionStorage.getItem('OrderId');
       this.setState({
@@ -97,18 +91,18 @@ class OrderListPage extends React.Component {
         myOrderId: tempView === modeViewType.orderlistView ? '' : tempOrderId,
       });
 
-      const { ViewType } = this.state;
-      if (ViewType === modeViewType.orderlistView) {
-        await this.fnSetModelVisible(true, 'loading');
+      if (tempView === modeViewType.orderlistView) {
         await this.fnSetColumnHeader();
         await this.fnGetmyList();
         await this.fnGetallList();
-        await this.fnSetModelVisible(false, 'loading');
       }
     } catch (err) {
       message.error(`componentWillReceiveProps:${err.message}`);
     }
+    await this.fnSetModelVisible(false, 'loading');
   }
+
+  // componentWillMount = () => { }
 
   // componentWillUpdate = () => { }
 
@@ -120,12 +114,8 @@ class OrderListPage extends React.Component {
   // #region get list ---------------------------------
 
   fnSetColumnHeader = async () => {
-    const tempMyArr = [];
-    const tempAllArr = [];
-    for (let i = 0; i < defaultColumn.length; i += 1) {
-      tempMyArr.push(defaultColumn[i]);
-      tempAllArr.push(defaultColumn[i]);
-    }
+    const tempMyArr = [...defaultColumn];
+    const tempAllArr = [...defaultColumn];
 
     tempMyArr.push({
       title: '操作',
@@ -148,11 +138,7 @@ class OrderListPage extends React.Component {
       align: 'center',
       render: (text, record) => (
         <div>
-          <Button
-            size="middle"
-            // disabled={new Date(`${record.endtime}:59`) < new Date()}
-            onClick={() => this.btnJoin(record)}
-          >
+          <Button size="middle" onClick={() => this.btnJoin(record)}>
             +1
           </Button>
         </div>
@@ -172,10 +158,10 @@ class OrderListPage extends React.Component {
       await this.handleSessionStorage('', '');
       await this.fnGetmyList();
       await this.fnGetallList();
-      await this.fnSetModelVisible(false, 'loading');
     } catch (err) {
       message.error(`fnReload:${err.message}`);
     }
+    await this.fnSetModelVisible(false, 'loading');
   }
 
   fnGetmyList = async () => {
@@ -224,8 +210,8 @@ class OrderListPage extends React.Component {
 
   btnOnSearch = async (value) => {
     const { allOrderListArray } = this.state;
-    let tempArray = [];
     const compareAtt = ['id_num', 'name', 'user_name', 'endtime']; // 'user_id'
+    let tempArray = [];
 
     try {
       if (await this.IsNullOrEmpty(value)) {
@@ -268,8 +254,8 @@ class OrderListPage extends React.Component {
       .then(async (values) => {
         if (values.code !== undefined
           && (tempOrderItem.invite_code === undefined || values.code.trim() === tempOrderItem.invite_code)) {
-          await this.handleSessionStorage(modeViewType.joinView, myOrderId);
           this.formRef.current.resetFields();
+          await this.handleSessionStorage(modeViewType.joinView, myOrderId);
           await this.fnSetModelVisible(false);
           this.handlePage(`${HeaderPageRouter}/${modeViewType.joinView}`);
         } else {
@@ -387,7 +373,7 @@ class OrderListPage extends React.Component {
                 <div style={{ marginTop: 5, width: '100%' }}>
                   <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
                     所有訂單
-                </span>
+                  </span>
                   <Search
                     style={{ width: 250, marginLeft: 10 }}
                     allowClear="true"
