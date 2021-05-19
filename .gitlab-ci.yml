@@ -54,7 +54,7 @@ dev_build:
     - echo ${COMMIT}
     - cd BackEnd
     - ls -a
-    # - docker version
+    - docker version
     - echo ${REPO_URL}/${REPO_PROJECT}:${COMMIT}
     # - echo "$REPO_PASSWORD" | docker login -u "$REPO_USER" --password-stdin ${REPO_URL}
     - docker build --no-cache -t ${REPO_URL}/${REPO_PROJECT}:${COMMIT} .
