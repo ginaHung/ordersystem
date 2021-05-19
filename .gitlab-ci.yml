@@ -58,4 +58,9 @@ dev_build:
     - echo ${REPO_URL}/${REPO_PROJECT}:${COMMIT}
     - echo "$REPO_PASSWORD" | docker login -u "$REPO_USER" --password-stdin ${REPO_URL}
     - docker build --no-cache -t ${REPO_URL}/${REPO_PROJECT}:${COMMIT} .
+    - docker tag ${REPO_URL}/${REPO_PROJECT}:${COMMIT} ${REPO_URL}/${REPO_PROJECT}:latest
     - docker push ${REPO_URL}/${REPO_PROJECT}:${COMMIT}
+    - docker push ${REPO_URL}/${REPO_PROJECT}:latest
+
+
+
