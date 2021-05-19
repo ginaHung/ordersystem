@@ -104,8 +104,8 @@ exports.getOrderData = async (ctx) => {
       const sqlCommand = `
       select header.*, pic.menu
       from  ${schema}.orderheader header
-      left join ${schema}.menu_pic pic on 'pic.id' = 'header.menu_id'
-      where header.id = ${body.header_id};
+      left join ${schema}.menu_pic pic on pic.id = header.menu_id
+      where header.id = '${body.header_id}';
       `;
       console.log(sqlCommand);
       result = await postgres.query(sqlCommand);
@@ -129,7 +129,7 @@ exports.getOrderItem = async (ctx) => {
       const sqlCommand = `
       select *
       from ${schema}.orderitem item
-      where item.header_id = ${body.header_id};
+      where item.header_id = '${body.header_id}';
       `;
       console.log(sqlCommand);
       result = await postgres.query(sqlCommand);
