@@ -69,25 +69,50 @@ exports.saveOrder = async (ctx) =>{
     } else if (body.menu === undefined) {
       ctx.body = new ResFormator(new Error('menu is empty')).fullResponse;
     } else {
-      if (body.id === undefined) { //insert
+      if (body.id === undefined) { //add
         const sqlCommand = `
-        insert into ${schema}.menu_pic (menu) values ('${body.menu}') returning id as menu_id;
-  
+        DO $$
+        DECLARE
+          new_menu_id integer := 0;
+        BEGIN
+        insert into ${schema}.menu_pic (menu) values ('${body.menu}') returning id into new_menu_id; 
+        
         insert into ${schema}.orderheader
         (id_num, name, user_id, user_name, describe, endtime, invite_code, menu_id, class_1, class_2, class_3, class_4, class_5)
         values ('${body.id_num}', '${body.name}', '${body.user_id}', '${body.user_name}', '${body.describe}', 
-          to_char(now(), 'YYYY/MM/DD HH24:MI:SS'),'${body.invite_code}', menu_id, '${body.class_1}', '${body.class_2}', 
-          '${body.class_3}', '${body.class_4}', '${body.class_5}')
-        returning id as header_id;`;
+          '${body.endtime}', '${body.invite_code}', new_menu_id, '${body.class_1}', '${body.class_2}', 
+          '${body.class_3}', '${body.class_4}', '${body.class_5}');
+        END $$;
+        select id from ${schema}.orderheader header where id_num='${body.id_num}' and name='${body.name}' and user_id='${body.user_id}';`;
         
-          console.log(sqlCommand);
-          result = await postgres.query(sqlCommand);
-          if (result.success === false) {
-            ctx.body = new ResFormator(new Error(result.error)).fullResponse;
-            return false;
-          }
-          ctx.body = new ResFormator(result.data).fullResponse;
+        console.log(sqlCommand);
+        result = await postgres.queryReturnAllResult(sqlCommand);
+        if (result.success === false) {
+          ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+          return false;
+        }
+        ctx.body = new ResFormator(result.data[1].rows).fullResponse;
   
+      } else {  //edit
+        const sqlCommand = `
+        DO $$
+        DECLARE
+          update_menu_id integer := 0;
+        BEGIN
+        select ${schema}.orderheader.menu_id into update_menu_id from ${schema}.orderheader where id='${body.id}';
+        update ${schema}.menu_pic set menu='${body.menu}' where id=update_menu_id;
+        update ${schema}.orderheader
+        set name='${body.name}', endtime='${body.endtime}', invite_code='${body.invite_code}', describe='${body.describe}'
+        where id='${body.id}';
+        END $$;
+        `;
+        console.log(sqlCommand);
+        result = await postgres.query(sqlCommand);
+        if (result.success === false) {
+          ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+          return false;
+        }
+        ctx.body = new ResFormator(result.data).fullResponse;
       }
     } 
   } catch (error) {
