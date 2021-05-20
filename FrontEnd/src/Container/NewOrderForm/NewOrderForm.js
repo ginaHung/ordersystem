@@ -9,23 +9,26 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import {
-  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber, Popconfirm, Modal, Spin,
+  Tooltip, Table, Button, Divider, Input, message, DatePicker, TimePicker, Upload, InputNumber,
+  Popconfirm, Modal, Spin, Form,
 } from 'antd';
 import {
-  PlusOutlined, DoubleRightOutlined, DoubleLeftOutlined, QuestionCircleOutlined, PushpinTwoTone, DeleteOutlined,
-  EyeOutlined, MehOutlined, MinusCircleOutlined, CheckCircleOutlined, EditOutlined, LikeOutlined,
+  PlusOutlined, DoubleRightOutlined, DoubleLeftOutlined, QuestionCircleOutlined,
+  PushpinTwoTone, DeleteOutlined, EyeOutlined, MehOutlined, MinusCircleOutlined,
+  CheckCircleOutlined, EditOutlined, LikeOutlined,
 } from '@ant-design/icons';
 
-import { SaveMyOrder, SaveOrderRow, getOrderData, getOrderItem } from '../../service/API';
-import {
-  LoginRouter, HeaderPageRouter, modeViewType,
-  NewOrderdata, dataSource,
-} from '../../utils/define';
+import { getOrderData, getOrderItem, SaveMyOrder, SaveOrderRow } from '../../service/API';
+import { LoginRouter, modeViewType } from '../../utils/define';
 import './NewOrderForm.less';
 
 const { TextArea } = Input;
+const HeaderClassLength = 20;
+const RowClassLength = 50;
 
 class NewOrderForm extends React.Component {
+  formRef = React.createRef();
+
   initState = {
     userid: sessionStorage.getItem('emplid'),
     username: sessionStorage.getItem('emplidname'),
@@ -83,16 +86,18 @@ class NewOrderForm extends React.Component {
 
   // componentWillMount = () => { }
 
+  // componentWillUpdate = () => { }
+
+  // componentDidUpdate = () => { }
+
   componentDidMount = async () => {
     const { userid, ViewType, orderId, myOrderHeader } = this.state;
     const sessionRoute = `${sessionStorage.getItem('View')}/${sessionStorage.getItem('OrderId')}`;
 
-
-    // console.log(`sessionRoute=${sessionRoute},state=${ViewType}/${orderId}`);
     if (await this.IsNullOrEmpty(userid)) {
       const { history } = this.props;
       history.push(LoginRouter);
-    } else if (sessionRoute !== `${ViewType}/${orderId}` || (ViewType === modeViewType.joinView && orderId === '')) {
+    } else if (sessionRoute !== `${ViewType}/${orderId}` || (ViewType === modeViewType.joinView && await this.IsNullOrEmpty(orderId))) {
       await this.fnReload();
     } else {
       try {
@@ -107,9 +112,6 @@ class NewOrderForm extends React.Component {
             myOrderHeader: dataHeaderResult,
           });
         } else { // edit, view
-          this.setState({
-            ViewType: ViewType === '' || Object.values(modeViewType).indexOf(ViewType) < 0 ? modeViewType.joinView : ViewType,
-          });
           await this.fnGetOrderList();
         }
 
@@ -121,10 +123,6 @@ class NewOrderForm extends React.Component {
       await this.fnSetModelVisible(false, 'loading');
     }
   }
-
-  // componentWillUpdate = () => { }
-
-  // componentDidUpdate = () => { }
 
   disabledDate = (current) => current && current.endOf('day') < moment().endOf('day')
 
@@ -208,7 +206,7 @@ class NewOrderForm extends React.Component {
     dataHeaderResult.orderEndDate = tempheader.endtime.substring(0, 10);
     dataHeaderResult.orderEndTime = tempheader.endtime.substring(11);
     dataHeaderResult.orderCode = tempheader.invite_code;
-    dataHeaderResult.orderMenu = tempheader.orderMenu;
+    dataHeaderResult.orderMenu = tempheader.menu;
     dataHeaderResult.OrderClass = [tempheader.class_1, tempheader.class_2, tempheader.class_3, tempheader.class_4, tempheader.class_5];
     dataHeaderResult.orderDescribeArr = await this.handleDescribe(tempheader.describe);
 
@@ -229,15 +227,15 @@ class NewOrderForm extends React.Component {
   fnSetColumnHeader = async (flagAdd) => {
     const { visibleClass, myOrderHeader, myOrderRow } = this.state;
     const tempOrderHeader = myOrderHeader;
-    let tempV = visibleClass;
     const tempRows = myOrderRow;
+    let tempV = visibleClass;
 
     if (flagAdd !== undefined
       && ((flagAdd && visibleClass >= 0 && visibleClass < 5) || (!flagAdd && visibleClass > 0 && visibleClass <= 5))) {
       tempV = flagAdd === true ? tempV + 1 : tempV - 1;
     }
 
-    const tempHeader = [
+    let tempHeader = [
       {
         dataIndex: 'id',
         align: 'center',
@@ -316,7 +314,7 @@ class NewOrderForm extends React.Component {
                 className="tableCell-input"
                 // style={{ width: '100%', height: '28px', textAlign: 'center' }}
                 value={record.user_name}
-                maxLength={10}
+                maxLength={20}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'user_name')}
               />
             )
@@ -337,38 +335,13 @@ class NewOrderForm extends React.Component {
             <span style={{ color: 'red', fontSize: '20px' }}>*</span>
             品項
           </div>,
-        // <div>
-        //   {this.fnIsViewTypeMyOrder() ? (
-        //     <div>
-        //       <span style={{ marginLeft: 40, color: 'red', fontSize: '20px' }}>*</span>
-        //       品項
-        //       <Tooltip placement="topLeft" title="刪除欄位">
-        //         <DoubleLeftOutlined
-        //           style={{ marginLeft: 15 }}
-        //           onClick={() => this.fnSetColumnHeader(false)}
-        //         />
-        //       </Tooltip>
-        //       <Tooltip placement="topLeft" title="新增欄位(最多5欄)">
-        //         <DoubleRightOutlined
-        //           style={{ marginLeft: 8 }}
-        //           onClick={() => this.fnSetColumnHeader(true)}
-        //         />
-        //       </Tooltip>
-        //     </div>
-        //   ) : (
-        //     <div>
-        //       <span style={{ color: 'red', fontSize: '20px' }}>*</span>
-        //       品項
-        //     </div>
-        //   )}
-        // </div>,
         render: (text, record, index) => (
           <div>
             {(this.fnIsRowEditType(record.id)) ? (
               <Input
                 className="tableCell-input"
                 value={record.item_name}
-                maxLength={30}
+                maxLength={50}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'item_name')}
               />
             )
@@ -386,13 +359,16 @@ class NewOrderForm extends React.Component {
           // eslint-disable-next-line react/jsx-indent
           <div>
             {this.fnIsViewTypeMyOrder() ? (
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                value={myOrderHeader.OrderClass[0]}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableClassName(e, 0)}
-                placeholder="糖"
-              />
+              <Form colon={false} className="tableHeader-class" ref={this.formRef}>
+                <Form.Item name="class1" initialValue={myOrderHeader.OrderClass[0]}>
+                  <Input
+                    style={{ width: '100%', textAlign: 'center' }}
+                    maxLength={HeaderClassLength}
+                    onChange={(e) => this.ChangeTableClassName(e, 0)}
+                    placeholder="糖"
+                  />
+                </Form.Item>
+              </Form>
             ) : myOrderHeader.OrderClass[0]}
           </div>,
         render: (text, record, index) => (
@@ -401,7 +377,7 @@ class NewOrderForm extends React.Component {
               <Input
                 className="tableCell-input"
                 value={record.class_1}
-                maxLength={10}
+                maxLength={RowClassLength}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_1')}
               />
             )
@@ -416,13 +392,16 @@ class NewOrderForm extends React.Component {
           // eslint-disable-next-line react/jsx-indent
           <div>
             {this.fnIsViewTypeMyOrder() ? (
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                value={myOrderHeader.OrderClass[1]}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableClassName(e, 1)}
-                placeholder="冰"
-              />
+              <Form colon={false} className="tableHeader-class" ref={this.formRef}>
+                <Form.Item name="class2" initialValue={myOrderHeader.OrderClass[1]}>
+                  <Input
+                    style={{ width: '100%', textAlign: 'center' }}
+                    maxLength={HeaderClassLength}
+                    onChange={(e) => this.ChangeTableClassName(e, 1)}
+                    placeholder="冰"
+                  />
+                </Form.Item>
+              </Form>
             ) : myOrderHeader.OrderClass[1]}
           </div>,
         render: (text, record, index) => (
@@ -431,7 +410,7 @@ class NewOrderForm extends React.Component {
               <Input
                 className="tableCell-input"
                 value={record.class_2}
-                maxLength={10}
+                maxLength={RowClassLength}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_2')}
               />
             )
@@ -446,12 +425,15 @@ class NewOrderForm extends React.Component {
           // eslint-disable-next-line react/jsx-indent
           <div>
             {this.fnIsViewTypeMyOrder() ? (
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                value={myOrderHeader.OrderClass[2]}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableClassName(e, 2)}
-              />
+              <Form colon={false} className="tableHeader-class" ref={this.formRef}>
+                <Form.Item name="class3" initialValue={myOrderHeader.OrderClass[2]}>
+                  <Input
+                    style={{ width: '100%', textAlign: 'center' }}
+                    maxLength={HeaderClassLength}
+                    onChange={(e) => this.ChangeTableClassName(e, 2)}
+                  />
+                </Form.Item>
+              </Form>
             ) : myOrderHeader.OrderClass[2]}
           </div>,
         render: (text, record, index) => (
@@ -460,7 +442,7 @@ class NewOrderForm extends React.Component {
               <Input
                 className="tableCell-input"
                 value={record.class_3}
-                maxLength={10}
+                maxLength={RowClassLength}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_3')}
               />
             )
@@ -475,12 +457,15 @@ class NewOrderForm extends React.Component {
           // eslint-disable-next-line react/jsx-indent
           <div>
             {this.fnIsViewTypeMyOrder() ? (
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                value={myOrderHeader.OrderClass[3]}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableClassName(e, 3)}
-              />
+              <Form colon={false} className="tableHeader-class" ref={this.formRef}>
+                <Form.Item name="class4" initialValue={myOrderHeader.OrderClass[3]}>
+                  <Input
+                    style={{ width: '100%', textAlign: 'center' }}
+                    maxLength={HeaderClassLength}
+                    onChange={(e) => this.ChangeTableClassName(e, 3)}
+                  />
+                </Form.Item>
+              </Form>
             ) : myOrderHeader.OrderClass[3]}
           </div>,
         render: (text, record, index) => (
@@ -489,7 +474,7 @@ class NewOrderForm extends React.Component {
               <Input
                 className="tableCell-input"
                 value={record.class_4}
-                maxLength={10}
+                maxLength={RowClassLength}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_4')}
               />
             )
@@ -504,12 +489,15 @@ class NewOrderForm extends React.Component {
           // eslint-disable-next-line react/jsx-indent
           <div>
             {this.fnIsViewTypeMyOrder() ? (
-              <Input
-                style={{ width: '100%', textAlign: 'center' }}
-                value={myOrderHeader.OrderClass[4]}
-                maxLength={10}
-                onChange={(e) => this.ChangeTableClassName(e, 4)}
-              />
+              <Form colon={false} className="tableHeader-class" ref={this.formRef}>
+                <Form.Item name="class5" initialValue={myOrderHeader.OrderClass[4]}>
+                  <Input
+                    style={{ width: '100%', textAlign: 'center' }}
+                    maxLength={HeaderClassLength}
+                    onChange={(e) => this.ChangeTableClassName(e, 4)}
+                  />
+                </Form.Item>
+              </Form>
             ) : myOrderHeader.OrderClass[4]}
           </div>,
         render: (text, record, index) => (
@@ -518,7 +506,7 @@ class NewOrderForm extends React.Component {
               <Input
                 className="tableCell-input"
                 value={record.class_5}
-                maxLength={10}
+                maxLength={RowClassLength}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'class_5')}
               />
             )
@@ -557,6 +545,7 @@ class NewOrderForm extends React.Component {
               <Input
                 className="tableCell-input"
                 value={record.remark}
+                maxLength={200}
                 onChange={(e) => this.ChangeTableCell(e, record.id, 'remark')}
               />
             )
@@ -569,11 +558,9 @@ class NewOrderForm extends React.Component {
     for (let i = 0; i < tempV; i += 1) {
       tempHeader.push(header2[i]);
     }
-    for (let i = 0; i < header3.length; i += 1) {
-      tempHeader.push(header3[i]);
-    }
+    tempHeader = [...tempHeader, ...header3];
 
-    if (flagAdd !== undefined && flagAdd === false) { // 清空內容
+    if (flagAdd !== true) { // 清空內容
       for (let i = 0; i < tempRows.length; i += 1) {
         for (let j = tempV + 1; j <= 5; j += 1) {
           tempRows[i][`class_${j}`] = '';
@@ -588,6 +575,7 @@ class NewOrderForm extends React.Component {
       myOrderColumn: tempHeader,
       visibleClass: tempV,
       myOrderRow: tempRows,
+      myOrderHeader: tempOrderHeader,
     });
   }
 
@@ -675,7 +663,7 @@ class NewOrderForm extends React.Component {
   ChangeTableClassName = (e, column) => {
     const { myOrderHeader } = this.state;
     const tempHeader = myOrderHeader;
-    tempHeader.OrderClass[column] = e.target.value.trim();
+    tempHeader.OrderClass[column] = e.target.value();
     this.setState({ myOrderHeader: tempHeader });
   };
 
@@ -865,13 +853,12 @@ class NewOrderForm extends React.Component {
     // return true → 建立者/row建立者且時間未大於endtime
     // return false →
     const { ViewType, myOrderRow, userid, myOrderHeader } = this.state;
-    const tempArray = myOrderRow;
-    const index = tempArray.findIndex((p) => p.id === id);
+    const index = myOrderRow.findIndex((p) => p.id === id);
     let result = false;
 
     if (ViewType === modeViewType.neworderView
       || userid === myOrderHeader.orderuserId
-      || (userid === tempArray[index].create_user
+      || (userid === myOrderRow[index].create_id
         && (new Date(`${myOrderHeader.orderEndDate} ${myOrderHeader.orderEndTime}:59`) > new Date()))) {
       result = true;
     }
@@ -909,11 +896,7 @@ class NewOrderForm extends React.Component {
 
 
   render() {
-    const {
-      ViewType, orderId,
-      myOrderColumn, myOrderHeader, myOrderRow,
-      visibleModel,
-    } = this.state;
+    const { myOrderColumn, myOrderHeader, myOrderRow, visibleModel } = this.state;
     return (
       <div>
         <Spin spinning={visibleModel.loading}>
@@ -1151,7 +1134,7 @@ class NewOrderForm extends React.Component {
                 <div>
                   <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#000000' }}>
                     訂單
-                </span>
+                  </span>
                   <Tooltip placement="topLeft" title="刪除欄位">
                     <DoubleLeftOutlined
                       style={{ marginLeft: 15, verticalAlign: 'text-top' }}
