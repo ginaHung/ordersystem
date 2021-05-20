@@ -8,6 +8,7 @@ const { schema } = config;
 
 exports.getAllOrderList = async (ctx) => {
   try {
+    let result = null;
     const sqlCommand = `
     select *
     from  ${schema}.orderheader
@@ -27,6 +28,7 @@ exports.getAllOrderList = async (ctx) => {
 exports.getMyOrder = async (ctx) => {
   const { body } = ctx.request;
   try {
+    let result = null;
     if (body.user_id === undefined) {
       ctx.body = new ResFormator(new Error('user_id is empty')).fullResponse;
     } else {
@@ -52,6 +54,7 @@ exports.getMyOrder = async (ctx) => {
 exports.saveOrder = async (ctx) =>{
   const { body } = ctx.request;
   try {
+    let result = null;
     if (body.id_num === undefined) {
       ctx.body = new ResFormator(new Error('id_num is empty')).fullResponse;
     } else if (body.name === undefined) {
@@ -122,6 +125,7 @@ exports.saveOrder = async (ctx) =>{
 exports.getOrderData = async (ctx) => {
   const { body } = ctx.request;
   try {
+    let result = null;
     if (body.header_id === undefined) {
       ctx.body = new ResFormator(new Error('header_id is empty')).fullResponse;
     } else {
@@ -147,6 +151,7 @@ exports.getOrderData = async (ctx) => {
 exports.getOrderItem = async (ctx) => {
   const { body } = ctx.request;
   try {
+    let result = null;
     if (body.header_id === undefined) {
       ctx.body = new ResFormator(new Error('header_id is empty')).fullResponse;
     } else {
@@ -169,26 +174,40 @@ exports.getOrderItem = async (ctx) => {
   }
 }
 
-exports.addOrder = async (ctx) => {
+exports.saveRow = async (ctx) => {
   const { body } = ctx.request;
   try {
-    if (body.id_num === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'id_num is empty'}).fullResponse;
-    } else if (body.name === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'name is empty'}).fullResponse;
-    } else if (body.user_id === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'user_id is empty'}).fullResponse;
-    } else if (body.user === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'user is empty'}).fullResponse;
-    } else if (body.endtime === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'endtime is empty'}).fullResponse;
-    } else if (body.invite_code === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'invite_code is empty'}).fullResponse;
-    } else {
-      tempBody = Object.assign(body);
-      tempBody.id = (orderList.length + 1).toString();
-      orderList.push(tempBody);
-      ctx.body = new ResFormator(orderList).fullResponse;
+    if (body.id === undefined) {
+      ctx.body = new ResFormator({name: 'Error', message: 'id is empty'}).fullResponse;
+    } else if (body.addRow.length !== 0) {
+      let result = null;
+      let insertCommand = `
+      insert into ${schema}.orderitem
+        (header_id, user_name, create_id, item_name, class_1, class_2, class_3, class_4, class_5, price, remark)
+        values `;
+      let valuesSQL = [];
+      for (let i = 0; i < body.addRow.length; i += 1) {
+        const tempStr = `
+        ('${body.id}', '${body.addRow[i].user_name}', '${body.addRow[i].create_id}', '${body.addRow[i].item_name}',
+        '${body.addRow[i].class_1}', '${body.addRow[i].class_2}', '${body.addRow[i].class_3}', '${body.addRow[i].class_4}', '${body.addRow[i].class_5}',
+        '${body.addRow[i].price}', '${body.addRow[i].remark}')`;
+        valuesSQL.push(tempStr);
+      }
+      valuesSQL = valuesSQL.join(',');
+      insertCommand = `${insertCommand} ${valuesSQL};`;
+      const sqlCommand = `
+      DO $$
+      BEGIN
+      ${insertCommand}
+      END $$
+      `;
+      console.log(sqlCommand);
+      result = await postgres.query(sqlCommand);
+      if (result.success === false) {
+        ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+        return false;
+      }
+      ctx.body = new ResFormator(result.data).fullResponse;
     }
     
   } catch (error) {

@@ -40,6 +40,7 @@ const router = new Router();
  * @apiParam {string} password, user's password
  * @apiSuccessExample {json} Request Example
  * {
+ *   id: '1',
  *   id_num: '20210425-1016', 
  *   name: 'Drink-Milk Shop',
  *   user_id: '10910305',
@@ -89,7 +90,7 @@ const router = new Router();
     router.post('/getOrderItem', controller.getOrderItem);
 
  /**
- * @api {POST} /api/order/addOrder
+ * @api {POST} /api/order/saveRow
  * @apiName addOrder
  * @apiGroup login
  * @apiVersion 1.0.0
@@ -112,7 +113,7 @@ const router = new Router();
  *   class_5: '',  
  * }
  */
-  router.post('/addOrder', controller.addOrder);
+  router.post('/saveRow', controller.saveRow);
 
 /**
  * @api {POST} /api/order/editOrder
