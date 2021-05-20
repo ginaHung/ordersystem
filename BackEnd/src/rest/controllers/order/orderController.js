@@ -91,7 +91,7 @@ exports.saveOrder = async (ctx) =>{
           ctx.body = new ResFormator(new Error(result.error)).fullResponse;
           return false;
         }
-        ctx.body = new ResFormator(result.data[1].rows).fullResponse;
+        ctx.body = new ResFormator(result.data[1].rows[0]).fullResponse;
   
       } else {  //edit
         const sqlCommand = `
