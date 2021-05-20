@@ -7,15 +7,6 @@ cache:
     - BackEnd/node_modules/
     - FrontEnd/node_modules/
 
-# .before_script_template: &build_test-integration
-#   before_script:
-#   # - sudo docker stop document_cicd
-#   # - sudo docker container rm document_cicd
-#   - sudo bash delDocker.sh
-#   - sudo bash delNodeModule.sh
-#   - sudo docker run --rm -v `pwd`/BackEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm install'
-#   - sudo docker run --rm -v `pwd`/FrontEnd:/myapp -t node:10.17.0-slim sh -x -c 'cd /myapp && npm install'
-
 stages:
   - buildfrontend
   - dev_build
@@ -42,10 +33,6 @@ dev_build:
     - azure_login
   image: docker
   stage: dev_build
-  services:
-    - docker:dind
-  variables:
-    DOCKER_TLS_CERTDIR: ""
   tags:
     - aws
     - m4-large
