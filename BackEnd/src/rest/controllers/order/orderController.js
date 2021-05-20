@@ -95,26 +95,23 @@ exports.saveOrder = async (ctx) =>{
   
       } else {  //edit
         const sqlCommand = `
-        DO $$
-        DECLARE
-          update_menu_id integer := 0;
-        BEGIN
-        select ${schema}.orderheader.menu_id into update_menu_id from ${schema}.orderheader where id='${body.id}';
+        BEGIN;
         update ${schema}.menu_pic set menu='${body.menu}'
         where id in (select menu_id from ${schema}.orderheader where id='${body.id}');
         update ${schema}.orderheader
         set name='${body.name}', endtime='${body.endtime}', invite_code='${body.invite_code}', describe='${body.describe}'
         where id='${body.id}';
-        END $$;
-        select id from ${schema}.orderheader header where id='${body.id}';`;
-
+        END;
+        select id from ${schema}.orderheader where id='${body.id}';
+        `;
+        
         console.log(sqlCommand);
         result = await postgres.queryReturnAllResult(sqlCommand);
         if (result.success === false) {
           ctx.body = new ResFormator(new Error(result.error)).fullResponse;
           return false;
         }
-        ctx.body = new ResFormator(result.data[1].rows[0]).fullResponse;
+        ctx.body = new ResFormator(result.data[4].rows[0]).fullResponse;
       }
     } 
   } catch (error) {
