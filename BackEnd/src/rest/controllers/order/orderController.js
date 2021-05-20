@@ -69,7 +69,7 @@ exports.saveOrder = async (ctx) =>{
     } else if (body.menu === undefined) {
       ctx.body = new ResFormator(new Error('menu is empty')).fullResponse;
     } else {
-      if (body.id === undefined) { //add
+      if (body.id === undefined || body.id ==="") { //add
         const sqlCommand = `
         DO $$
         DECLARE
@@ -103,7 +103,8 @@ exports.saveOrder = async (ctx) =>{
         update ${schema}.menu_pic set menu='${body.menu}' where id=update_menu_id;
         update ${schema}.orderheader
         set name='${body.name}', endtime='${body.endtime}', invite_code='${body.invite_code}', describe='${body.describe}'
-        where id='${body.id}';
+        where id='${body.id}'
+        returning id as update_header_id;
         END $$;
         `;
         console.log(sqlCommand);
