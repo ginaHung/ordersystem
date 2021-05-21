@@ -179,7 +179,7 @@ exports.saveRow = async (ctx) => {
   try {
     if (body.id === undefined) {
       ctx.body = new ResFormator({name: 'Error', message: 'id is empty'}).fullResponse;
-    } else if (body.addRow.length !== 0) {
+    } else {
       let result = null;
       let insertCommand = `
       insert into ${schema}.orderitem
@@ -194,7 +194,23 @@ exports.saveRow = async (ctx) => {
         valuesSQL.push(tempStr);
       }
       valuesSQL = valuesSQL.join(',');
-      insertCommand = `${insertCommand} ${valuesSQL};`;
+      let updateSQL = [];
+      for (let i = 0; i < body.editRow.length; i += 1) {
+        const tempStr = `
+        update ${schema}.orderitem set user_name='${body.editRow[i].user_name}', item_name='${body.editRow[i].item_name}',
+        class_1='${body.editRow[i].class_1}', class_2='${body.editRow[i].class_2}', class_3='${body.editRow[i].class_3}',
+        class_4='${body.editRow[i].class_4}', class_5='${body.editRow[i].class_5}', price='${body.editRow[i].price}',
+        remark='${body.editRow[i].remark}' where id='${body.editRow[i].id}'`;
+        updateSQL.push(tempStr);
+      }
+      updateSQL = updateSQL.join(';');
+      let deleteSQL = '';
+      if (body.delRow.length > 0) {
+        deleteSQL = `
+        delete from ${schema}.orderitem where id in ('${body.delRow.join(',')}')`;
+      }
+      
+      insertCommand = `${insertCommand} ${valuesSQL}; ${updateSQL}; ${deleteSQL};`;
       const sqlCommand = `
       DO $$
       BEGIN
@@ -208,38 +224,6 @@ exports.saveRow = async (ctx) => {
         return false;
       }
       ctx.body = new ResFormator(result.data).fullResponse;
-    }
-    
-  } catch (error) {
-    ctx.body = new ResFormator(new Error(error.message)).fullResponse;
-  }
-};
-
-exports.editOrder = async (ctx) => {
-  try {
-    const { body } = ctx.request;
-    if (body.id === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'id is empty'}).fullResponse;
-    } else if (body.id_num === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'id_num is empty'}).fullResponse;
-    } else if (body.name === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'name is empty'}).fullResponse;
-    } else if (body.user_id === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'user_id is empty'}).fullResponse;
-    } else if (body.user === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'user is empty'}).fullResponse;
-    } else if (body.endtime === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'endtime is empty'}).fullResponse;
-    } else if (body.invite_code === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'invite_code is empty'}).fullResponse;
-    } else {
-      for (let i = 0; i < orderList.length; i += 1) {
-        if (body.id === orderList[i].id) {
-          orderList[i] = Object.assign(body);
-          break;
-        }
-      }
-      ctx.body = new ResFormator('success').fullResponse;
     } 
   } catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
@@ -247,42 +231,21 @@ exports.editOrder = async (ctx) => {
 };
 
 exports.deleteOrder = async (ctx) => {
+  const { body } = ctx.request;
   try {
-    const { body } = ctx.request;
     if (body.id === undefined) {
       ctx.body = new ResFormator({name: 'Error', message: 'id is empty'}).fullResponse;
     } else {
-      for (let i = 0; i < orderList.length; i += 1) {
-        if (body.id === orderList[i].id) {
-          orderList.splice(i, 1);
-          break;
-        }
-      }
-      ctx.body = new ResFormator('success').fullResponse;
-    }
-  } catch (error) {
-    ctx.body = new ResFormator(new Error(error.message)).fullResponse;
-  }
-};
+      const sqlCommand = `
+      BEGIN;
+      delete from ${schema}.orderheader where id='${body.id}';
+      delete from ${schema}.orderitem where header_id='${body.id}';
+      delete from ${schema}.menu_pic where id in ()
+      END;
+      `;
 
-exports.addOrderItem = async (ctx) => {
-  try {
-    const { body } = ctx.request;
-    if (body.orderID === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'orderID is empty'}).fullResponse;
-    } else if (body.user_name === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'user_name is empty'}).fullResponse;
-    } else if (body.item_name === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'item_name is empty'}).fullResponse;
-    } else if (body.price === undefined) {
-      ctx.body = new ResFormator({name: 'Error', message: 'price is empty'}).fullResponse;
-    } else {
-      tempBody = Object.assign(body);
-      tempBody.id = (orderItemList.length + 1).toString();
-      orderItemList.push(tempBody);
-      ctx.body = new ResFormator(orderItemList).fullResponse;
     }
-  } catch (error) {
+  }catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
   }
 };
