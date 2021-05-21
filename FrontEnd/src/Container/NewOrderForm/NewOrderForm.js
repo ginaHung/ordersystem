@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/prop-types */
@@ -18,7 +19,7 @@ import {
   CheckCircleOutlined, EditOutlined, LikeOutlined,
 } from '@ant-design/icons';
 
-import { getOrderData, getOrderItem, SaveMyOrder, SaveOrderRow } from '../../service/API';
+import { getOrderData, getOrderItem, saveOrder, saveRow, deleteOrder } from '../../service/API';
 import { LoginRouter, modeViewType } from '../../utils/define';
 import './NewOrderForm.less';
 
@@ -145,11 +146,10 @@ class NewOrderForm extends React.Component {
 
   createOrderNum = async () => {
     const date = new Date();
-    const tempM = date.getMonth().toString().length === 1 ? `0${date.getMonth()}` : date.getMonth();
+    const tempM = (date.getMonth() + 1).toString().length === 1 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
     const tempD = date.getDate().toString().length === 1 ? `0${date.getDate()}` : date.getDate();
     const tempH = date.getHours().toString().length === 1 ? `0${date.getHours()}` : date.getHours();
     const tempMin = date.getMinutes().toString().length === 1 ? `0${date.getMinutes()}` : date.getMinutes();
-
     const tempNum = `${date.getFullYear()}${tempM}${tempD}-${tempH}${tempMin}`;
     return tempNum;
   }
@@ -221,6 +221,7 @@ class NewOrderForm extends React.Component {
       myOrderHeader: dataHeaderResult,
       myOrderRow: dataRowResult,
       visibleClass: tempvisibleClassNum,
+      mydelOrderRow: [],
     });
   }
 
@@ -588,7 +589,6 @@ class NewOrderForm extends React.Component {
     const { myOrderHeader } = this.state;
     const tempHeader = myOrderHeader;
     tempHeader[att] = e.target.value;
-    // console.log(e.target.value);
     this.setState({
       myOrderHeader: tempHeader,
     });
@@ -663,7 +663,7 @@ class NewOrderForm extends React.Component {
   ChangeTableClassName = (e, column) => {
     const { myOrderHeader } = this.state;
     const tempHeader = myOrderHeader;
-    tempHeader.OrderClass[column] = e.target.value();
+    tempHeader.OrderClass[column] = e.target.value.trim();
     this.setState({ myOrderHeader: tempHeader });
   };
 
@@ -721,33 +721,43 @@ class NewOrderForm extends React.Component {
     const { myOrderRow, mydelOrderRow } = this.state;
     const tempdelArray = mydelOrderRow;
 
-    if (id.substring(0, 1) !== '+') {
+    if (id.toString().substring(0, 1) !== '+') {
       tempdelArray.push(id);
     }
     this.setState({
-      myOrderRow: myOrderRow.filter((item) => item.id !== id),
+      myOrderRow: myOrderRow.filter((item) => item.id.toString() !== id.toString()),
       mydelOrderRow: tempdelArray,
     });
   }
 
   btnCompleteOrder = async () => {
-    await this.fnReload();
-    // const { myOrderRow, mydelOrderRow } = this.state;
-    // const tempdelArray = mydelOrderRow;
+    const { orderId } = this.state;
+    let apiResult = null;
 
-    // this.setState({
-    //   myOrderRow: myOrderRow.filter((item) => item.id !== id),
-    //   mydelOrderRow: tempdelArray,
-    // });
+    try {
+      const data = { id: orderId };
+      apiResult = await deleteOrder(data);
+      if (apiResult.data.success !== true) {
+        throw new Error(apiResult.data.errorCode);
+      }
+      await this.fnReload();
+    } catch (err) {
+      message.error(`btnCompleteOrder:${err.message}`);
+    }
   }
 
   btnSaveOrder = async () => {
     const { visibleModel, orderId, myOrderHeader, myOrderRow, mydelOrderRow } = this.state;
     const tempVisibleModal = visibleModel;
-    tempVisibleModal.tempStr = '失敗';
     let apiResult = null;
     try {
       await this.fnSetModelVisible(true, 'loading');
+      if (await this.IsNullOrEmpty(myOrderHeader.orderName)
+        || await this.IsNullOrEmpty(myOrderHeader.orderEndDate)
+        || await this.IsNullOrEmpty(myOrderHeader.orderEndTime)
+        || await this.IsNullOrEmpty(myOrderHeader.orderCode)) {
+        throw new Error('請輸入必填內容');
+      }
 
       // #region header
       let data = {
@@ -766,33 +776,40 @@ class NewOrderForm extends React.Component {
         class_4: myOrderHeader.OrderClass[3],
         class_5: myOrderHeader.OrderClass[4],
       };
-
-      apiResult = await SaveMyOrder(data);
+      apiResult = await saveOrder(data);
       if (apiResult.data.success !== true) {
         throw new Error(apiResult.data.errorCode);
       }
       // #endregion header
 
       // #region rows
-      const tempId = apiResult.data.result.order_id;
+      const tempId = apiResult.data.result.id;
       const addRow = [];
       const editRow = [];
       for (let i = 0; i < myOrderRow.length; i += 1) {
-        if (myOrderRow[i].id.indexOf('+') >= 0) {
+        if (await this.IsNullOrEmpty(myOrderRow[i].user_name)
+          || await this.IsNullOrEmpty(myOrderRow[i].item_name)
+          || await this.IsNullOrEmpty(myOrderRow[i].price)) {
+          // eslint-disable-next-line no-continue
+          continue;
+        } else if (myOrderRow[i].id.toString().indexOf('+') >= 0) {
           addRow.push(myOrderRow[i]);
         } else if (myOrderRow[i].type !== undefined) {
           editRow.push(myOrderRow[i]);
         }
       }
-      data = {
-        id: tempId,
-        addRow,
-        editRow,
-        mydelOrderRow,
-      };
-      apiResult = await SaveOrderRow(data);
-      if (apiResult.data.success !== true) {
-        throw new Error(apiResult.data.errorCode);
+
+      if (addRow.length > 0 || editRow.length > 0 || mydelOrderRow.length > 0) {
+        data = {
+          id: tempId,
+          addRow,
+          editRow,
+          delRow: mydelOrderRow,
+        };
+        apiResult = await saveRow(data);
+        if (apiResult.data.success !== true) {
+          throw new Error(apiResult.data.errorCode);
+        }
       }
       // #endregion rows
 
@@ -803,25 +820,64 @@ class NewOrderForm extends React.Component {
       });
       await this.fnGetOrderList();
     } catch (err) {
+      tempVisibleModal.tempStr = `失敗, ${err.message}`;
       this.setState({
         visibleModel: tempVisibleModal,
       });
-      message.error(err.message);
+      // message.error(`btnSaveOrder${err.message}`);
     }
     this.fnSetModelVisible(true, 'saveNotifyModal');
-    // await this.fnSetModelVisible(false, 'loading');
   }
 
   btnSaveOrderRow = async () => {
-    const { visibleModel, myOrderHeader, myOrderRow, mydelOrderRow } = this.state;
+    const { visibleModel, orderId, myOrderRow, mydelOrderRow } = this.state;
     const tempVisibleModal = visibleModel;
-    tempVisibleModal.tempStr = '成功';
+    let apiResult = null;
+    try {
+      await this.fnSetModelVisible(true, 'loading');
 
-    this.setState({
-      visibleModel: tempVisibleModal,
-      // myOrderRow: myOrderRow.filter((item) => item.id !== id),
-      // mydelOrderRow: tempdelArray,
-    });
+      // #region rows
+      const addRow = [];
+      const editRow = [];
+      for (let i = 0; i < myOrderRow.length; i += 1) {
+        if (await this.IsNullOrEmpty(myOrderRow[i].user_name)
+          || await this.IsNullOrEmpty(myOrderRow[i].item_name)
+          || await this.IsNullOrEmpty(myOrderRow[i].price)) {
+          // eslint-disable-next-line no-continue
+          continue;
+        } else if (myOrderRow[i].id.toString().indexOf('+') >= 0) {
+          addRow.push(myOrderRow[i]);
+        } else if (myOrderRow[i].type !== undefined) {
+          editRow.push(myOrderRow[i]);
+        }
+      }
+
+      if (addRow.length > 0 || editRow.length > 0 || mydelOrderRow.length > 0) {
+        const data = {
+          id: orderId,
+          addRow,
+          editRow,
+          delRow: mydelOrderRow,
+        };
+        apiResult = await saveRow(data);
+        if (apiResult.data.success !== true) {
+          throw new Error(apiResult.data.errorCode);
+        }
+      }
+      // #endregion rows
+
+      tempVisibleModal.tempStr = '成功';
+      this.setState({
+        visibleModel: tempVisibleModal,
+      });
+      await this.fnGetOrderList();
+    } catch (err) {
+      tempVisibleModal.tempStr = `失敗, ${err.message}`;
+      this.setState({
+        visibleModel: tempVisibleModal,
+      });
+      // message.error(`btnSaveOrder${err.message}`);
+    }
     this.fnSetModelVisible(true, 'saveNotifyModal');
   }
 
@@ -970,7 +1026,7 @@ class NewOrderForm extends React.Component {
                     onClick={() => this.fnReload()}
                   >
                     離開
-                </Button>
+                  </Button>
                 </div>
               ) : <div />}
             </div>
@@ -1012,7 +1068,7 @@ class NewOrderForm extends React.Component {
                       <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                     ) : <div />}
                   結單時間:
-                </td>
+                  </td>
                   <td className="table-col2">
                     {this.fnIsViewTypeMyOrder() ? (
                       <div>
@@ -1045,7 +1101,7 @@ class NewOrderForm extends React.Component {
                         onChange={this.btnchangeImgurl}
                       >
                         <Button className="uploadbtn">
-                          {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%', height: '100%' }} />
+                          {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="QQ" style={{ width: '100%', height: '100%' }} />
                             : (
                               <div style={{ color: '#b3aca6' }}>
                                 <PlusOutlined style={{ fontSize: 16 }} />
@@ -1056,7 +1112,7 @@ class NewOrderForm extends React.Component {
                       </Upload>
                     ) : (
                       <div className="uploadbtn">
-                        {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="avatar" style={{ width: '100%', height: '100%' }} />
+                        {myOrderHeader.orderMenu ? <img src={myOrderHeader.orderMenu} alt="QQ" style={{ width: '100%', height: '100%' }} />
                           : (
                             <div style={{ width: '100%', height: '100%', textAlign: 'center', marginTop: '80px', color: '#b3aca6' }}>
                               <MehOutlined style={{ fontSize: 32 }} />
@@ -1184,13 +1240,13 @@ class NewOrderForm extends React.Component {
             </Button>
           )}
         >
-          <img alt="example" style={{ width: '100%' }} src={myOrderHeader.orderMenu} />
+          <img alt="QQ" style={{ width: '100%' }} src={myOrderHeader.orderMenu} />
         </Modal>
 
         <Modal
           visible={visibleModel.saveNotifyModal}
           // title="通知"
-          width={300}
+          width={500}
           // centered
           onCancel={() => this.fnSetModelVisible(false)}
           footer={(

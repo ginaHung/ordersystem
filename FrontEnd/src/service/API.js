@@ -10,10 +10,6 @@ export const getAllOrderList = (data) => HttpService.post('order/getAllOrderList
 export const getOrderData = (data) => HttpService.post('order/getOrderData', data);
 export const getOrderItem = (data) => HttpService.post('order/getOrderItem', data);
 
-
-
-export const SaveMyOrder = (data) => HttpService.post('order/getOrderList', data);
-export const SaveOrderRow = (data) => HttpService.post('order/getOrderList', data);
-// export const saveMyOrder = (data) => HttpService.post('order/getOrderList', data);
-// export const saveMyOrderRow = (data) => HttpService.post('order/getOrderList', data);
-// export const deleteMyOrderRow = (data) => HttpService.post('order/getOrderList', data);
+export const saveOrder = (data) => HttpService.post('order/saveOrder', data);
+export const saveRow = (data) => HttpService.post('order/saveRow', data);
+export const deleteOrder = (data) => HttpService.post('order/deleteOrder', data);
