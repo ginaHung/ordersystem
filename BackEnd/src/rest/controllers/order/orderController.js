@@ -102,7 +102,8 @@ exports.saveOrder = async (ctx) =>{
         update ${schema}.menu_pic set menu='${body.menu}'
         where id in (select menu_id from ${schema}.orderheader where id='${body.id}');
         update ${schema}.orderheader
-        set name='${body.name}', endtime='${body.endtime}', invite_code='${body.invite_code}', describe='${body.describe}'
+        set name='${body.name}', endtime='${body.endtime}', invite_code='${body.invite_code}', describe='${body.describe}',
+        class_1='${body.class_1}', class_2='${body.class_2}', class_3='${body.class_3}', class_4='${body.class_4}', class_5='${body.class_5}',
         where id='${body.id}';
         END;
         select id from ${schema}.orderheader where id='${body.id}';
