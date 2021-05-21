@@ -103,7 +103,7 @@ exports.saveOrder = async (ctx) =>{
         where id in (select menu_id from ${schema}.orderheader where id='${body.id}');
         update ${schema}.orderheader
         set name='${body.name}', endtime='${body.endtime}', invite_code='${body.invite_code}', describe='${body.describe}',
-        class_1='${body.class_1}', class_2='${body.class_2}', class_3='${body.class_3}', class_4='${body.class_4}', class_5='${body.class_5}',
+        class_1='${body.class_1}', class_2='${body.class_2}', class_3='${body.class_3}', class_4='${body.class_4}', class_5='${body.class_5}'
         where id='${body.id}';
         END;
         select id from ${schema}.orderheader where id='${body.id}';
@@ -213,12 +213,13 @@ exports.saveRow = async (ctx) => {
         deleteSQL = `
         delete from ${schema}.orderitem where id in ('${body.delRow.join("','")}')`;
       }
-      deleteSQL = deleteSQL.length > 0 ? `{${deleteSQL.join(';')}};` : '';
-      insertCommand = `${insertCommand} ${updateSQL} ${deleteSQL}`;
+      deleteSQL = deleteSQL.length > 0 ? `${deleteSQL};` : '';
+      saveCommand = `${insertCommand} ${updateSQL} ${deleteSQL}`;
+
       const sqlCommand = `
       DO $$
       BEGIN
-      ${insertCommand}
+      ${saveCommand}
       END $$
       `;
       console.log(sqlCommand);
