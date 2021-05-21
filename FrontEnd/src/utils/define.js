@@ -57,12 +57,24 @@ const defaultColumn = [
     },
   },
   {
+    title: '狀態',
+    dataIndex: 'endtime',
+    align: 'center',
+    width: 100,
+    render: (text, record) => (
+      <div>
+        {(new Date(`${record.endtime}:59`) > new Date())
+          ? (<span style={{ color: 'red' }}>進行中</span>) : (<span style={{ color: 'green' }}>已結單</span>)}
+      </div>
+    ),
+  },
+  {
     title: '描述',
     dataIndex: 'describe',
     align: 'left',
     render: (text, record) => (
       <div>
-        {(record.describe && record.describe.length > 30) ? `${record.describe.slice(0, 30)}...` : record.describe}
+        {(record.describe && record.describe.length > 20) ? `${record.describe.slice(0, 20)}...` : record.describe}
       </div>
     ),
   },

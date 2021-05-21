@@ -139,7 +139,7 @@ class OrderListPage extends React.Component {
       render: (text, record) => (
         <div>
           <Button size="middle" onClick={() => this.btnJoin(record)}>
-            +1
+            瀏覽
           </Button>
         </div>
       ),
