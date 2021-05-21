@@ -194,6 +194,8 @@ exports.saveRow = async (ctx) => {
         valuesSQL.push(tempStr);
       }
       valuesSQL = valuesSQL.join(',');
+      insertCommand = valuesSQL.length > 0 ? `${insertCommand} ${valuesSQL};` : '';
+
       let updateSQL = [];
       for (let i = 0; i < body.editRow.length; i += 1) {
         const tempStr = `
@@ -203,14 +205,15 @@ exports.saveRow = async (ctx) => {
         remark='${body.editRow[i].remark}' where id='${body.editRow[i].id}'`;
         updateSQL.push(tempStr);
       }
-      updateSQL = updateSQL.join(';');
+      updateSQL = updateSQL.length > 0 ? `${updateSQL.join(';')};` : '';
+      
       let deleteSQL = '';
       if (body.delRow.length > 0) {
         deleteSQL = `
-        delete from ${schema}.orderitem where id in ('${body.delRow.join(',')}')`;
+        delete from ${schema}.orderitem where id in ('${body.delRow.join("','")}')`;
       }
-      
-      insertCommand = `${insertCommand} ${valuesSQL}; ${updateSQL}; ${deleteSQL};`;
+      deleteSQL = deleteSQL.length > 0 ? `{${deleteSQL.join(';')}};` : '';
+      insertCommand = `${insertCommand} ${updateSQL} ${deleteSQL}`;
       const sqlCommand = `
       DO $$
       BEGIN
