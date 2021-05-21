@@ -211,9 +211,9 @@ exports.saveRow = async (ctx) => {
       let deleteSQL = '';
       if (body.delRow.length > 0) {
         deleteSQL = `
-        delete from ${schema}.orderitem where id in ('${body.delRow.join("','")}')`;
+        delete from ${schema}.orderitem where id in ('${body.delRow.join("','")}');`;
       }
-      deleteSQL = deleteSQL.length > 0 ? `${deleteSQL};` : '';
+      
       saveCommand = `${insertCommand} ${updateSQL} ${deleteSQL}`;
 
       const sqlCommand = `
