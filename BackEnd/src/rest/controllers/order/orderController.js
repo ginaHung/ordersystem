@@ -240,10 +240,16 @@ exports.deleteOrder = async (ctx) => {
       BEGIN;
       delete from ${schema}.orderheader where id='${body.id}';
       delete from ${schema}.orderitem where header_id='${body.id}';
-      delete from ${schema}.menu_pic where id in ()
+      delete from ${schema}.menu_pic where id in (select menu_id from ${schema}.orderheader where id='${body.id}');
       END;
       `;
-
+      console.log(sqlCommand);
+      result = await postgres.query(sqlCommand);
+      if (result.success === false) {
+        ctx.body = new ResFormator(new Error(result.error)).fullResponse;
+        return false;
+      }
+      ctx.body = new ResFormator(result.data).fullResponse;
     }
   }catch (error) {
     ctx.body = new ResFormator(new Error(error.message)).fullResponse;
