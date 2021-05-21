@@ -16,7 +16,7 @@ import {
 import {
   PlusOutlined, DoubleRightOutlined, DoubleLeftOutlined, QuestionCircleOutlined,
   PushpinTwoTone, DeleteOutlined, EyeOutlined, MehOutlined, MinusCircleOutlined,
-  CheckCircleOutlined, EditOutlined, LikeOutlined,
+  CheckCircleOutlined, EditOutlined, LikeOutlined, CopyOutlined,
 } from '@ant-design/icons';
 
 import { getOrderData, getOrderItem, saveOrder, saveRow, deleteOrder } from '../../service/API';
@@ -881,6 +881,23 @@ class NewOrderForm extends React.Component {
     this.fnSetModelVisible(true, 'saveNotifyModal');
   }
 
+  btnCopyInfo = async () => {
+    const { myOrderHeader } = this.state;
+    try {
+      const textField = document.createElement('textarea');
+      textField.innerText = `單號:${myOrderHeader.orderNum}, 名稱:${myOrderHeader.orderName}, 邀請碼:${myOrderHeader.orderCode}, 結單時間:${myOrderHeader.orderEndDate} ${myOrderHeader.orderEndTime}`;
+      document.body.appendChild(textField);
+      textField.select();
+      const successful = document.execCommand('copy');
+      if (successful) {
+        message.success('Copy Success !');
+      }
+      textField.remove();
+    } catch (err) {
+      message.error(`btnCopyInfo:${err.message}`);
+    }
+  }
+
   // #endregion txt change ----------------------------------
 
 
@@ -973,6 +990,12 @@ class NewOrderForm extends React.Component {
                     onChange={(e) => this.changeOrderHeader(e, 'orderName')}
                   />
                   <span style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: 5 }}> ({myOrderHeader.orderNum})</span>
+                  <Tooltip placement="topLeft" title="Copy">
+                    <CopyOutlined
+                      style={{ fontSize: '20px', marginLeft: 10, color: 'gray' }}
+                      onClick={() => this.btnCopyInfo()}
+                    />
+                  </Tooltip>
 
                   <Popconfirm
                     title="訂單完成後將會刪除紀錄，確定要完成嗎?"
@@ -1129,7 +1152,7 @@ class NewOrderForm extends React.Component {
                       <span className="input-buttonborder" style={{ color: 'red', fontSize: '20px' }}>*</span>
                     ) : <div />}
                   邀請碼:
-                </td>
+                  </td>
                   <td className="table-col2">
                     {this.fnIsViewTypeMyOrder() ? (
                       <Input
