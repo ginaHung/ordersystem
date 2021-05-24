@@ -9,7 +9,8 @@ cache:
 
 stages:
   - buildfrontend
-  - dev_build
+  - build
+  - deploy
 
 buildfrontend:
   only:
@@ -21,18 +22,18 @@ buildfrontend:
     - m4-large
   script:
     - ls
-    - cd ./FrontEnd 
+    - cd ./FrontEnd
     - npm install
     - ls
     - npm run build
-    - mkdir -p ../BackEnd/public/web 
+    - mkdir -p ../BackEnd/public/web
     - cp -rf ./dist/*.* ../BackEnd/public/web
 
 dev_build:
   only:
     - azure_login
   image: docker
-  stage: dev_build
+  stage: build
   services:
     - docker:dind
   tags:
@@ -51,5 +52,40 @@ dev_build:
     - docker push ${REPO_URL}/${REPO_PROJECT}:${COMMIT}
     - docker push ${REPO_URL}/${REPO_PROJECT}:latest
 
-
-
+dev_deploy:
+  only:
+    - azure_login
+  image:
+    name: chnbohwr/docker
+    entrypoint: [""]
+  stage: deploy
+  tags:
+    - aws
+    - m4-large
+  variables:
+    KUBECONFIG: /opt/bitnami/config
+  before_script:
+    - mkdir -p /opt/bitnami/
+    - cp $KUBECONFIG_PRD $KUBECONFIG
+  script:
+    - echo ${COMMIT}
+    # - kubectl create secret docker-registry docker-pull-secret
+    #   --docker-server=$REPO_URL
+    #   --docker-username=$REPO_USER
+    #   --docker-password=$REPO_PASSWORD
+    #   -n ordersystem
+    #   -o yaml
+    #   --dry-run | kubectl apply -f -
+    # - source $PRDENV
+    # - export IMAGE_NAME=${REPO_URL}/${REPO_PROJECT}:latest
+    # - cd helm-tms
+    # - envsubst < values_template.yaml > values.yaml
+    # - envsubst < values_template_schedule.yaml > scheduleValues.yaml
+    # - cat values.yaml
+    # - cat scheduleValues.yaml
+    # #- helm install test--management . --namespace=tms
+    # - helm install test--management--schedule -f scheduleValues.yaml . --namespace=tms
+    # - helm upgrade test--management . --install --namespace=tms
+    # #- helm upgrade test--management--schedule -f scheduleValues.yaml . --install --namespace=tms
+    # - helm list --namespace=tms
+    # - kubectl get svc -n tms

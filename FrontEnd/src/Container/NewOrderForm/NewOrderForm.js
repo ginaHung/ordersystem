@@ -1191,7 +1191,7 @@ class NewOrderForm extends React.Component {
                               {/* eslint-disable-next-line no-nested-ternary */}
                               { item.str.indexOf('https://') >= 0 || item.str.indexOf('http://') >= 0 ? (
                                 <a href={item.str.trim()} target="blank">{item.str}</a>
-                              ) : item.str.trim() === '' ? (<br />) : item.str}
+                              ) : item.str}
                             </div>
                           );
                         })}
