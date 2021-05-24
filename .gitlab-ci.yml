@@ -64,9 +64,9 @@ dev_deploy:
     - m4-large
   variables:
     KUBECONFIG: /opt/bitnami/config
-  before_script:
-    - mkdir -p /opt/bitnami/
-    - cp $KUBECONFIG_PRD $KUBECONFIG
+  # before_script:
+  #   - mkdir -p /opt/bitnami/
+  #   - cp $KUBECONFIG_PRD $KUBECONFIG
   script:
     - echo ${COMMIT}
     # - kubectl create secret docker-registry docker-pull-secret
