@@ -62,30 +62,22 @@ dev_deploy:
   tags:
     - aws
     - m4-large
-  variables:
-    KUBECONFIG: /opt/bitnami/config
-  # before_script:
-  #   - mkdir -p /opt/bitnami/
-  #   - cp $KUBECONFIG_PRD $KUBECONFIG
+  before_script:
+     - mkdir -p /.kube/
+     - cp $KUBECONFIG_DEV /.kube/config
+     - kubectl get nodes
+     - kubectl get pods -n ordersystem
   script:
-    - echo ${COMMIT}
-    # - kubectl create secret docker-registry docker-pull-secret
-    #   --docker-server=$REPO_URL
-    #   --docker-username=$REPO_USER
-    #   --docker-password=$REPO_PASSWORD
-    #   -n ordersystem
-    #   -o yaml
-    #   --dry-run | kubectl apply -f -
-    # - source $PRDENV
-    # - export IMAGE_NAME=${REPO_URL}/${REPO_PROJECT}:latest
-    # - cd helm-tms
-    # - envsubst < values_template.yaml > values.yaml
-    # - envsubst < values_template_schedule.yaml > scheduleValues.yaml
-    # - cat values.yaml
-    # - cat scheduleValues.yaml
-    # #- helm install test--management . --namespace=tms
-    # - helm install test--management--schedule -f scheduleValues.yaml . --namespace=tms
-    # - helm upgrade test--management . --install --namespace=tms
-    # #- helm upgrade test--management--schedule -f scheduleValues.yaml . --install --namespace=tms
-    # - helm list --namespace=tms
-    # - kubectl get svc -n tms
+    - kubectl create secret docker-registry ordersystem-docker-pull-secret
+      --docker-server=$REPO_URL
+      --docker-username=$REPO_USER
+      --docker-password=$REPO_PASSWORD
+      -n ordersystem
+      -o yaml
+      --dry-run | kubectl apply -f -
+    - kubectl apply -f test_configmap.yml
+    - sed -i "s#__DOCKER_WEB_IMAGE__#${REPO_URL}/${REPO_PROJECT}:latest#" test_deploy.yml 
+    - cat test_management_deploy.yml 
+    - kubectl apply -f test_deploy.yml
+
+

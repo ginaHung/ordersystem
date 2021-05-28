@@ -7,6 +7,10 @@ const helmet = require('koa-helmet');
 const cors = require('koa2-cors');
 const path = require('path');
 const logger = require('koa-logger');
+const config = require('config');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
 const passport = require('./src/rest/models/passport');
 
 const app = new Koa();
@@ -78,17 +82,44 @@ process.on('unhandledRejection', (error) => {
   console.error('unhandledRejection', error);
 });
 
-const server = require('http').Server(app.callback());// implement koa app to http server
 
-// start
 
-server.listen(8080, '0.0.0.0', (err) => {
-  if (err) {
-    return console.log(`http server init error: ${err.message}`);
-  }
-  console.log('http server listening at port: 8080');
-  return true;
-});
+// // start
+// const server = require('http').Server(app.callback());// implement koa app to http server
+// server.listen(8080, '0.0.0.0', (err) => {
+//   if (err) {
+//     return console.log(`http server init error: ${err.message}`);
+//   }
+//   console.log(`http server listening at port: ${config.backend_port}`);
+//   return true;
+// });
+
+let server = null;
+if (process.env.type === "deploy") {
+  // SSL options
+  const options = {
+    key: fs.readFileSync('./ssl/server-key.pem'),
+    cert: fs.readFileSync('./ssl/wistron.cer'),
+  };
+  server = https.Server(options, app.callback());
+  server.listen(config.backend_port, '0.0.0.0', (err) => {
+    if (err) {
+      return console.log(`http server init error: ${err.message}`);
+    }
+    console.log(`https server listening at port: ${config.backend_port}`);
+    return true;
+  });
+} else {
+  server = http.Server(app.callback());
+  // start
+  server.listen(config.backend_port, '0.0.0.0', (err) => {
+    if (err) {
+      return console.log(`http server init error: ${err.message}`);
+    }
+    console.log(`http server listening at port: ${config.backend_port}`);
+    return true;
+  });
+}
 
 module.exports = server;
 

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: testsystem
+  name: testsystem
+  namespace: ordersystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testsystem
+  template:
+    metadata:
+      labels:
+        app: testsystem
+    spec:
+      containers:
+        - image: __DOCKER_WEB_IMAGE__
+          name: testsystem
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: ordersystem-config
+      imagePullSecrets:
+        - name: ordersystem-docker-pull-secret
+        
