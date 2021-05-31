@@ -7,6 +7,10 @@ cache:
     - BackEnd/node_modules/
     - FrontEnd/node_modules/
 
+before_script:
+- IMAGE_TAG=${CI_COMMIT_SHA:0:8}
+- echo ${IMAGE_TAG}
+
 stages:
   - buildfrontend
   - build
@@ -40,6 +44,7 @@ dev_build:
     - aws
     - m4-large
   script:
+    - echo ${IMAGE_TAG}
     - export COMMIT=$(date +"%Y%m%d%H%M")
     - echo ${COMMIT}
     - cd BackEnd
@@ -68,6 +73,7 @@ dev_deploy:
      - kubectl get nodes
      - kubectl get pods -n ordersystem
   script:
+    - echo ${IMAGE_TAG}
     - kubectl create secret docker-registry ordersystem-docker-pull-secret
       --docker-server=$REPO_URL
       --docker-username=$REPO_USER
