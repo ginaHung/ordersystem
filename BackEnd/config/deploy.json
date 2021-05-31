@@ -15,11 +15,11 @@
   "FRONTEND_DOMAIN": "https://13.66.91.4:8080/web",
   "FRONTEND_CALLBACK": "/#/orderlist",
   "JWT_SECRET": "HymanIsGood",
-  "user": "ordersystem",
-  "database": "postgresql_ordersystem",
-  "password": "ordersystem2021",
-  "host": "10.34.45.4",
-  "port": 54321,
+  "user": "ordersystem@postgresql-ordersystem",
+  "database": "postgres",
+  "password": "Order2021System",
+  "host": "postgresql-ordersystem.postgres.database.azure.com",
+  "port": 5432,
   "timezone": "Asia/Taipei",
   "schema": "public"
 }
