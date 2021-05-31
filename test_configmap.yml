@@ -6,3 +6,4 @@ metadata:
   
 data:
   type: 'deploy'
+  NODE_ENV: 'deploy'

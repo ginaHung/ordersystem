@@ -10,10 +10,10 @@ exports.callback = async (ctx) => {
       { httpOnly: false,
         maxAge:300000, // 5m
       });
-    ctx.redirect(`${config.frontend_domain}${config.frontend_callback}`);
+    ctx.redirect(`${process.env.FRONTEND_DOMAIN}${process.env.FRONTEND_CALLBACK}`);
   } catch (error) {
     console.log(error);
-    ctx.redirect(`${config.frontend_domain}/`);
+    ctx.redirect(`${process.env.FRONTEND_DOMAIN}/`);
     return;
   }
 };

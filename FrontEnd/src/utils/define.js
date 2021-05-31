@@ -2,9 +2,7 @@ import React from 'react';
 import moment from 'moment';
 
 const AAD_CLIENT_ID = '225a8ec0-122d-46d2-9caa-852a641a12af';
-
 const SYSTEM_TITLE = '下午茶點餐系統';
-
 const LoginRouter = '/login';
 const HeaderPageRouter = '/orderlist';
 

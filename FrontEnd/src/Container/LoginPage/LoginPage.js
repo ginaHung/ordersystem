@@ -8,7 +8,7 @@ import { WindowsOutlined } from '@ant-design/icons';
 import './LoginPage.less';
 import cover from '../../../img/cover.png';
 // import { verify } from '../../service/API';
-import { SYSTEM_TITLE, HeaderPageRouter, API_URL, AAD_CLIENT_ID } from '../../utils/define';
+import { SYSTEM_TITLE, AAD_CLIENT_ID } from '../../utils/define';
 // import NowTime from '../../Component/DateTime';
 
 class LoginPage extends React.Component {
