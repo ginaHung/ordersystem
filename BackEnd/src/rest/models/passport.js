@@ -14,16 +14,20 @@ passport.use(new Strategy({
   tenant: config.AAD_TENANT_ID,
 },
   async (accessToken, refreshToken, params, profile, done) => {
-    // console.log('========accessToken==========', accessToken);
-    const aadUserData = await axios
-      .get('https://graph.windows.net/wistron.com/me?api-version=1.6', { headers: { Authorization: accessToken } })
-      .then((info) => info.data);
-    const { mailNickname, displayName, mail, physicalDeliveryOfficeName, surname, telephoneNumber } = aadUserData;
-    const userData = {
-      mailNickname, displayName, mail, physicalDeliveryOfficeName, surname, telephoneNumber,
-    };
-    console.log('========user login==========');
-    done(null, userData);
+    try {
+      // console.log('========accessToken==========', accessToken);
+      const aadUserData = await axios
+        .get('https://graph.windows.net/wistron.com/me?api-version=1.6', { headers: { Authorization: accessToken } })
+        .then((info) => info.data);
+      const { mailNickname, displayName, mail, physicalDeliveryOfficeName, surname, telephoneNumber } = aadUserData;
+      const userData = {
+        mailNickname, displayName, mail, physicalDeliveryOfficeName, surname, telephoneNumber,
+      };
+      console.log('========user login==========');
+      done(null, userData);
+    } catch (err) {
+      console.log(err);
+    }
   }),
 );
 
