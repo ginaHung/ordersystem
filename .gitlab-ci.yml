@@ -76,6 +76,7 @@ dev_deploy:
       -o yaml
       --dry-run | kubectl apply -f -
     - kubectl apply -f test_configmap.yml
+    # - envsubst < test_configmap.yml | kubectl apply -f -
     - sed -i "s#__DOCKER_WEB_IMAGE__#${REPO_URL}/${REPO_PROJECT}:latest#" test_deploy.yml 
     - cat test_deploy.yml 
     - kubectl apply -f test_deploy.yml
