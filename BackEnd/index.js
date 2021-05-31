@@ -40,6 +40,7 @@ const whitelist = [
   `http://localhost:8888`,
   // `http://127.0.0.1:8888`,
   `http://10.31.50.66`,
+  'https://13.66.91.4:8080',
 ];
 
 // X-Frame-Options Header
