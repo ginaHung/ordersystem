@@ -90,11 +90,12 @@ class LoginPage extends React.Component {
   }
 
   handleAzureLogin = async () => {
+    const API_URL = '/api/azure/callback';
     let redirectUrl = '';
     if (window.location.host.includes('localhost') || window.location.host.includes('127.0.0.1')) {
-      redirectUrl = `${API_URL}azure/callback`;
+      redirectUrl = `http://localhost:8080${API_URL}`;
     } else {
-      redirectUrl = `https://${window.location.host}/azure/callback`;
+      redirectUrl = `https://${window.location.host}${API_URL}`;
     }
 
     const url = `https://login.microsoftonline.com/wistron.com/oauth2/authorize?client_id=${AAD_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}`;

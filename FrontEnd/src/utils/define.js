@@ -1,7 +1,6 @@
 import React from 'react';
 import moment from 'moment';
 
-const API_URL = 'http://localhost:8080/api/';
 const AAD_CLIENT_ID = '225a8ec0-122d-46d2-9caa-852a641a12af';
 
 const SYSTEM_TITLE = '下午茶點餐系統';
@@ -80,7 +79,9 @@ const defaultColumn = [
   },
 ];
 
-const NewOrderdata = [{
+// #region xxxxx
+/*
+ const NewOrderdata = [{
   id: '1',
   heaader_id: '1',
   user_name: 'fanftzu',
@@ -312,10 +313,11 @@ const dataSource = [
     class_4: '',
     class_5: '',
   },
-];
+]; */
+// #endregion
 
 export {
-  API_URL, AAD_CLIENT_ID,
+  AAD_CLIENT_ID,
   SYSTEM_TITLE,
   LoginRouter, HeaderPageRouter,
   modeViewType,
