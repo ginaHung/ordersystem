@@ -61,7 +61,7 @@ class NewOrderForm extends React.Component {
     // myOrderRow: [{
     //   id: '+0',
     //   heaader_id: '',
-    //   // user_id: sessionStorage.getItem('emplid'),
+    //   // create_id: sessionStorage.getItem('emplid'),
     //   user_name: '',
     //   item_name: '',
     //   class_1: '',
@@ -693,7 +693,7 @@ class NewOrderForm extends React.Component {
       remark: '',
       price: '',
       type: '2',
-      create_user: userid,
+      create_id: userid,
     };
     tempRows.unshift(newRow);
 
